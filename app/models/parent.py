@@ -19,6 +19,7 @@ class Parent(BaseModel):
             }
         }
 
+
 class ParentUpdate(BaseModel):
     name: Optional[constr(strip_whitespace=True, min_length=1)]
     email: Optional[EmailStr]
@@ -32,6 +33,7 @@ class ParentUpdate(BaseModel):
                 "phone_number": "555-555-1234"  # Updated phone number
             }
         }
+
 
 # Example usage:
 parent_update_data = {
