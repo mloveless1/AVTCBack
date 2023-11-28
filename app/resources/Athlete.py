@@ -28,8 +28,6 @@ class AthleteResource(Resource):
             date_of_birth=args['date_of_birth'],
             gender=args['gender'],
             returner_status=args['returner_status'],
-            email=args['email'],
-            phone_number=args['phone_number']
         )
         db.session.add(new_athlete)
         try:

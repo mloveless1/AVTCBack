@@ -6,6 +6,7 @@ from app.models import Parent, Athlete
 from .database import init_db
 from flask_cors import CORS
 from .resources import AthleteResource
+from .resources import SignupResource
 from .database import db
 
 app = Flask(__name__)
@@ -19,7 +20,7 @@ db.init_app(app)
 init_db.setup_database()
 
 api.add_resource(AthleteResource, '/athletes/<int:athlete_id>')
-
+api.add_resource(SignupResource,'/signup' )
 
 @app.route('/')
 def hello_world():  # put application's code here
