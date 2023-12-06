@@ -17,46 +17,13 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # to suppress a warning me
 
 db.init_app(app)
 
+# Run DB setup
 init_db.setup_database()
 
+# Resource for athletes
 api.add_resource(AthleteResource, '/athletes/<int:athlete_id>')
-api.add_resource(SignupResource,'/signup' )
-
-@app.route('/')
-def hello_world():  # put application's code here
-    return 'Hello World!'
-
-
-@app.route('/create-dummy')
-def create_dummy():  # put application's code here
-    # Create a dummy parent
-    parent = Parent(
-        parent_id=1,  # Assuming `parent_id` is the primary key and is not auto-generated
-        email='parent@example.com',
-        phone_number='123-456-7890'
-    )
-
-    # Create a dummy athlete
-    athlete = Athlete(
-        athlete_id=1,  # Assuming `athlete_id` is the primary key and is not auto-generated
-        full_name='Dummy Athlete',
-        date_of_birth='2010-01-01',  # Use the appropriate format for your date column
-        gender='male',
-        returner_status='new',
-        parent_id=1  # This assumes the Athlete model has a `parent_id` foreign key
-    )
-
-    # Add both records to the session and commit
-    db.session.add(parent)
-    db.session.add(athlete)
-
-    try:
-        db.session.commit()
-        print("Dummy data inserted successfully!")
-    except Exception as e:
-        db.session.rollback()
-        print("An error occurred while inserting dummy data:", e)
-    return jsonify({"Message": "Dummy data created"})
+# Resource for signup page
+api.add_resource(SignupResource,'/signup')
 
 
 if __name__ == '__main__':
