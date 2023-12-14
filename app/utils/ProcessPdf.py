@@ -1,5 +1,6 @@
 import os
 import pdfrw
+from PIL import Image
 
 
 class ProcessPdf:
@@ -32,3 +33,59 @@ class ProcessPdf:
         elif type == 'checkbox':
             return pdfrw.objects.pdfname.BasePdfName('/Yes') if value else pdfrw.objects.pdfname.BasePdfName('/Off')
         return ''
+
+    def embed_image_to_pdf(self, image_path, pdf_path, x, y, width, height, page_number=0):
+        """
+        Embeds an image into the PDF at the specified location.
+        x, y: Coordinates for the image's lower-left corner
+        width, height: Dimensions of the image
+        page_number: Page number to add the image to
+        """
+        # Create a stamp PDF with the image
+        stamp = self.create_stamp_pdf(image_path, width, height)
+
+        # Merge the stamp with the form PDF
+        self.merge_pdfs(stamp, pdf_path, page_number, x, y)
+
+    def create_stamp_pdf(self, image_path, width, height):
+        """
+        Creates a stamp PDF with the image.
+        """
+        # Load and resize the image
+        image = Image.open(image_path)
+        image = image.resize((width, height))
+
+        # Save the image as a PDF
+        stamp_path = os.path.join(self.temp_directory, 'stamp.pdf')
+        image.save(stamp_path, 'PDF', resolution=100.0)
+
+        return stamp_path
+
+    @staticmethod
+    def merge_pdfs(stamp_pdf_path, pdf_path, page_number, x, y):
+        """
+        Merges the stamp PDF with the form PDF at specific coordinates.
+        """
+        form_pdf_path = pdf_path
+        form_pdf = pdfrw.PdfReader(form_pdf_path)
+        stamp_pdf = pdfrw.PdfReader(stamp_pdf_path)
+
+        # Get the page where the signature will be placed
+        form_page = form_pdf.pages[page_number]
+
+        # Create a PageMerge object for the form page
+        merger = pdfrw.PageMerge(form_page)
+
+        # Get the stamp page
+        stamp_page = stamp_pdf.pages[0]
+
+        # Adjust the stamp page dimensions and position
+        stamp_page_obj = pdfrw.PageMerge().add(stamp_page)[0]
+        stamp_page_obj.x, stamp_page_obj.y = x, y
+
+        # Add the stamp page to the merger and render it
+        merger.add(stamp_page_obj)
+        merger.render()
+
+        # Save the merged PDF
+        pdfrw.PdfWriter(form_pdf_path, trailer=form_pdf).write()

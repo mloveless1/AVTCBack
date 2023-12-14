@@ -1,3 +1,4 @@
+import base64
 import os
 from datetime import datetime
 
@@ -35,6 +36,21 @@ class SignupResource(Resource):
 
         pdf_links = []
         temp_directory = 'app/pdfforms/output_files'
+        signature_dir = 'app/pdfforms/signature_images'  # Update this path as needed
+
+        if not os.path.exists(signature_dir):
+            os.makedirs(signature_dir)
+
+        # Decode and save the signature image
+        signature_data = data['signature']
+        signature_img = base64.b64decode(signature_data.split(',')[1])
+        signature_img_path = 'app/pdfforms/signature_images/temp_signature.png'
+
+        try:
+            with open(signature_img_path, 'wb') as img_file:
+                img_file.write(signature_img)
+        except IOError as e:
+            return {'message': 'Error saving signature image', 'error': str(e)}, 500
 
         for athlete_data in data['athletes']:
 
@@ -52,11 +68,11 @@ class SignupResource(Resource):
             athlete_division = calculate_division(athlete_age)
             # Determine checkbox values based on gender
             if new_athlete.gender == 'male':
-                boy = 'On'
+                boy = '/1'
                 girl = 'Off'
             else:
                 boy = 'Off'
-                girl = 'On'
+                girl = '/1'
 
             # TODO: Add division Divisions[0]
             # Populate the PDF form data
@@ -88,10 +104,15 @@ class SignupResource(Resource):
 
             try:
                 db.session.commit()
+
                 # Fill the PDF form for the athlete
-                output_file = f"contract_{new_athlete.full_name}.pdf"  # Naming the PDF file
+                output_file = f"contract_{new_athlete.full_name}.pdf"
                 process_pdf = ProcessPdf(temp_directory, output_file)
                 process_pdf.add_data_to_pdf('app/pdfforms/PLAYER_CONTRACT.pdf', pdf_form_data)
+                path_to_pdf = os.path.join(temp_directory, output_file)
+
+                # Update these x, y, width, height values as needed
+                process_pdf.embed_image_to_pdf(signature_img_path, path_to_pdf, x=80, y=100, width=200, height=100)
 
                 pdf_link = os.path.join(request.url_root, temp_directory, output_file)  # Construct the link to the PDF
                 pdf_links.append(pdf_link)
