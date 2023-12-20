@@ -2,7 +2,7 @@ import base64
 import os
 from datetime import datetime
 
-from flask import jsonify, request
+from flask import request, current_app
 from flask_restful import Resource
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
@@ -12,6 +12,7 @@ from app.models import Athlete, Parent
 from app.utils.CalculateAge import calculate_age
 from app.utils.CalculateDivision import calculate_division
 from app.utils.ProcessPdf import ProcessPdf
+from app.utils.EmailNotification import EmailNotification
 
 engine = create_engine('mysql+pymysql://root:Iamnotmalo12!@localhost/avtc')  # Update with your database URI
 
@@ -112,13 +113,28 @@ class SignupResource(Resource):
                 path_to_pdf = os.path.join(temp_directory, output_file)
 
                 # Update these x, y, width, height values as needed
-                process_pdf.embed_image_to_pdf(signature_img_path, path_to_pdf, x=80, y=100, width=200, height=100)
+                process_pdf.embed_image_to_pdf(signature_img_path, path_to_pdf, x=80, y=100, width=80, height=35)
 
-                pdf_link = os.path.join(request.url_root, temp_directory, output_file)  # Construct the link to the PDF
-                pdf_links.append(pdf_link)
+                # Construct pdf link and append to pdf link list
+                pdf_path = os.path.join(temp_directory, output_file)
+                pdf_links.append(pdf_path)
 
             except SQLAlchemyError as e:
                 db.session.rollback()
                 return {'message': 'Error creating athlete', 'error': str(e)}, 500
+
+        # Construct email
+        email_helper = EmailNotification(current_app)
+
+        subject = '{parent} signed up for AV Track Club'.format(parent=new_parent.parent_name)
+        body = 'Contracts are attached below'
+        recipients = ['malc.loveless@gmail.com']
+
+        # Send email
+        email_helper.send_email(subject=subject,
+                                sender='malcolmloveless@gmail.com',
+                                recipients=recipients,
+                                body=body,
+                                pdf_paths=pdf_links)
 
         return {'message': 'Sign up successful'}, 201
