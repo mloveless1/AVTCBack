@@ -127,7 +127,7 @@ class SignupResource(Resource):
         email_helper = EmailNotification(current_app)
 
         subject = '{parent} signed up for AV Track Club'.format(parent=new_parent.parent_name)
-        body = 'Contracts are attached below'
+        body = 'Contracts are attached below, not formatted for mobile devices.'
         recipients = ['malc.loveless@gmail.com']
 
         # Send email
