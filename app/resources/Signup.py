@@ -77,7 +77,7 @@ class SignupResource(Resource):
 
             # TODO: Add division Divisions[0]
             # Populate the PDF form data
-            pdf_form_data = {
+            player_contract_form_data = {
                 'track[0]': 'On',
                 'cross_country[0]': '/Off',
                 'boy[0]': boy,
@@ -103,13 +103,28 @@ class SignupResource(Resource):
                 'Date[0]': datetime.now().strftime('%m/%d/%Y'),
             }
 
+            code_of_conduct_form_data = {
+                'PLAYER': new_athlete.full_name,
+                'CLUB': 'Antelope Valley Track Club',
+                'MY Child 1': new_athlete.full_name,
+                'MY Child 2': new_athlete.full_name,
+                'DATED': athlete_data['lastPhysical'],
+                'Player Name Please Print': new_athlete.full_name,
+                'Parents Name Please Print': data['parentName'],
+                'CoachClub Officials Name Please Print':  'Tameisha Warner',
+            }
+
             try:
                 db.session.commit()
 
                 # Fill the PDF form for the athlete
+                code_of_conduct_output_file = f"code_of_conduct{new_athlete.full_name}.pdf"
                 output_file = f"contract_{new_athlete.full_name}.pdf"
                 process_pdf = ProcessPdf(temp_directory, output_file)
-                process_pdf.add_data_to_pdf('app/pdfforms/PLAYER_CONTRACT.pdf', pdf_form_data)
+                process_conduct_pdf = ProcessPdf(temp_directory, code_of_conduct_output_file)
+                process_conduct_pdf.add_data_to_pdf('app/pdfforms/CODE_OF_CONDUCT.pdf', code_of_conduct_form_data)
+                process_pdf.add_data_to_pdf('app/pdfforms/PLAYER_CONTRACT.pdf', player_contract_form_data)
+                path_to_conduct_pdf = os.path.join(temp_directory, code_of_conduct_output_file)
                 path_to_pdf = os.path.join(temp_directory, output_file)
 
                 # Update these x, y, width, height values as needed
@@ -118,6 +133,7 @@ class SignupResource(Resource):
                 # Construct pdf link and append to pdf link list
                 pdf_path = os.path.join(temp_directory, output_file)
                 pdf_links.append(pdf_path)
+                pdf_links.append(path_to_conduct_pdf)
 
             except SQLAlchemyError as e:
                 db.session.rollback()
