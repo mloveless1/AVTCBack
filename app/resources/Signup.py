@@ -97,6 +97,7 @@ class SignupResource(Resource):
                 'Contact[0]': data['emergencyName'],
                 'Carrier[0]': data['carrier'],
                 'Policy_Number[0]': data['policyNumber'],
+                # Stupid lazy "hack" to align the text on the form correctly
                 'I_declare_under_penalty_of_perjury_that_I_am_a_parent_or_guardian_of[0]':
                     ("                                        " + new_athlete.full_name),
                 'Name_Parent_or_Guardian_print[0]': "                    " + new_parent.parent_name,
