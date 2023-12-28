@@ -25,6 +25,7 @@ class ProcessPdf:
                             pdfrw.PdfDict(V=self.encode_pdf_string(data[key], 'checkbox'))
                         )
 
+        template.Root.AcroForm.update(pdfrw.PdfDict(NeedAppearances=pdfrw.PdfObject('true')))
         pdfrw.PdfWriter().write(os.path.join(self.temp_directory, self.output_file), template)
 
     def encode_pdf_string(self, value, type):

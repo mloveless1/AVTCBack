@@ -42,7 +42,7 @@ class SignupResource(Resource):
         if not os.path.exists(signature_dir):
             os.makedirs(signature_dir)
 
-        # Decode and save the signature image
+        # Decode and save the parent signature image
         signature_data = data['signature']
         signature_img = base64.b64decode(signature_data.split(',')[1])
         signature_img_path = 'app/pdfforms/signature_images/temp_signature.png'
@@ -54,6 +54,17 @@ class SignupResource(Resource):
             return {'message': 'Error saving signature image', 'error': str(e)}, 500
 
         for athlete_data in data['athletes']:
+
+            # Decode and save the athlete signature image
+            athlete_signature_data = athlete_data['signature']
+            athlete_signature_img = base64.b64decode(athlete_signature_data.split(',')[1])
+            athlete_signature_img_path = 'app/pdfforms/signature_images/athlete_temp_signature.png'
+
+            try:
+                with open(athlete_signature_img_path, 'wb') as img_file:
+                    img_file.write(athlete_signature_img)
+            except IOError as e:
+                return {'message': 'Error saving athlete signature image', 'error': str(e)}, 500
 
             new_athlete = Athlete(
                 full_name=athlete_data['athleteFullName'],
@@ -107,8 +118,8 @@ class SignupResource(Resource):
             code_of_conduct_form_data = {
                 'PLAYER': new_athlete.full_name,
                 'CLUB': 'Antelope Valley Track Club',
-                'MY Child 1': new_athlete.full_name,
-                'MY Child 2': new_athlete.full_name,
+                'My Child 1': new_athlete.full_name,
+                'My Child 2': new_athlete.full_name,
                 'DATED': athlete_data['lastPhysical'],
                 'Player Name Please Print': new_athlete.full_name,
                 'Parents Name Please Print': data['parentName'],
@@ -118,18 +129,25 @@ class SignupResource(Resource):
             try:
                 db.session.commit()
 
-                # Fill the PDF form for the athlete
+                # Create names for output files
                 code_of_conduct_output_file = f"code_of_conduct{new_athlete.full_name}.pdf"
                 output_file = f"contract_{new_athlete.full_name}.pdf"
+
+                # Process pdf objects
                 process_pdf = ProcessPdf(temp_directory, output_file)
                 process_conduct_pdf = ProcessPdf(temp_directory, code_of_conduct_output_file)
+
+                # Add data to pdf forms
                 process_conduct_pdf.add_data_to_pdf('app/pdfforms/CODE_OF_CONDUCT.pdf', code_of_conduct_form_data)
                 process_pdf.add_data_to_pdf('app/pdfforms/PLAYER_CONTRACT.pdf', player_contract_form_data)
+
+                # Make paths to pdfs
                 path_to_conduct_pdf = os.path.join(temp_directory, code_of_conduct_output_file)
                 path_to_pdf = os.path.join(temp_directory, output_file)
 
-                # Update these x, y, width, height values as needed
+                # Add signature to pages - Update these x, y, width, height values as needed
                 process_pdf.embed_image_to_pdf(signature_img_path, path_to_pdf, x=80, y=100, width=80, height=35)
+                process_conduct_pdf.embed_image_to_pdf(athlete_signature_img, path_to_conduct_pdf, x=80, y=100, width=80, height=35)
 
                 # Construct pdf link and append to pdf link list
                 pdf_path = os.path.join(temp_directory, output_file)
