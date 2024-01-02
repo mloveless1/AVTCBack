@@ -6,6 +6,7 @@ from flask import request, current_app
 from flask_restful import Resource
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 
 from app.database import db
 from app.models import Athlete, Parent
@@ -19,13 +20,21 @@ engine = create_engine('mysql+pymysql://root:Iamnotmalo12!@localhost/avtc')  # U
 
 class SignupResource(Resource):
     def post(self):
+        session = Session(bind=engine)
+
         data = request.get_json()
+
 
         new_parent = Parent(
             parent_name=data['parentName'],
             email=data['email'],
             phone_number=data['phoneNumber']
         )
+
+        existing_parent = session.query(Parent).filter(Parent.email == data['email']).first()
+
+        if existing_parent:
+            return {'message': 'A user with this email already exists'}, 409
 
         db.session.add(new_parent)
 
@@ -54,17 +63,6 @@ class SignupResource(Resource):
             return {'message': 'Error saving signature image', 'error': str(e)}, 500
 
         for athlete_data in data['athletes']:
-
-            # Decode and save the athlete signature image
-            athlete_signature_data = athlete_data['signature']
-            athlete_signature_img = base64.b64decode(athlete_signature_data.split(',')[1])
-            athlete_signature_img_path = 'app/pdfforms/signature_images/athlete_temp_signature.png'
-
-            try:
-                with open(athlete_signature_img_path, 'wb') as img_file:
-                    img_file.write(athlete_signature_img)
-            except IOError as e:
-                return {'message': 'Error saving athlete signature image', 'error': str(e)}, 500
 
             new_athlete = Athlete(
                 full_name=athlete_data['athleteFullName'],
@@ -119,7 +117,7 @@ class SignupResource(Resource):
                 'PLAYER': new_athlete.full_name,
                 'CLUB': 'Antelope Valley Track Club',
                 'My Child 1': new_athlete.full_name,
-                'My Child 2': new_athlete.full_name,
+                'My Child 2': athlete_data['medicalConditions'],
                 'DATED': athlete_data['lastPhysical'],
                 'Player Name Please Print': new_athlete.full_name,
                 'Parents Name Please Print': data['parentName'],
@@ -147,7 +145,7 @@ class SignupResource(Resource):
 
                 # Add signature to pages - Update these x, y, width, height values as needed
                 process_pdf.embed_image_to_pdf(signature_img_path, path_to_pdf, x=80, y=100, width=80, height=35)
-                process_conduct_pdf.embed_image_to_pdf(athlete_signature_img, path_to_conduct_pdf, x=80, y=100, width=80, height=35)
+                process_conduct_pdf.embed_image_to_pdf(signature_img_path, path_to_conduct_pdf, x=250, y=45, width=80, height=35)
 
                 # Construct pdf link and append to pdf link list
                 pdf_path = os.path.join(temp_directory, output_file)
