@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.database import db
 from app.models import Athlete, Parent
-from app.utils.CalculateAge import calculate_age
+from app.utils.CalculateAge import calculate_age, calculate_age_in_year
 from app.utils.CalculateDivision import calculate_division
 from app.utils.ProcessPdf import ProcessPdf
 from app.utils.EmailNotification import EmailNotification
@@ -23,7 +23,6 @@ class SignupResource(Resource):
         session = Session(bind=engine)
 
         data = request.get_json()
-
 
         new_parent = Parent(
             parent_name=data['parentName'],
@@ -75,42 +74,46 @@ class SignupResource(Resource):
             db.session.add(new_athlete)
 
             athlete_age = calculate_age(new_athlete.date_of_birth)
-            athlete_division = calculate_division(athlete_age)
+            athlete_age_in_year = calculate_age_in_year(new_athlete.date_of_birth)
+            athlete_division = calculate_division(athlete_age_in_year)
             # Determine checkbox values based on gender
             if new_athlete.gender == 'male':
-                boy = '/1'
-                girl = 'Off'
+                boy = 'X'
+                girl = ' '
             else:
-                boy = 'Off'
-                girl = '/1'
+                boy = ' '
+                girl = 'X'
 
             # TODO: Add division Divisions[0]
             # Populate the PDF form data
             player_contract_form_data = {
-                'track[0]': 'On',
-                'cross_country[0]': '/Off',
-                'boy[0]': boy,
-                'girl[0]': girl,
-                'Age[0]': str(athlete_age),
-                'Divisions[0]': athlete_division,
-                'Players_Name[0]': new_athlete.full_name,
-                'Date_of_Birth[0]': new_athlete.date_of_birth.strftime('%m/%d/%Y'),
-                'Age_2[0]': str(athlete_age),
+                'KidSig': new_athlete.full_name,
+                'Year': '24',
+                'TeamName': 'Antelope Valley Track Club',
+                'TrackFieldBox': 'Yes',
+                'Boy': boy,
+                'Girl': girl,
+                'Age': str(athlete_age),
+                'Division': athlete_division,
+                'PlayersName': new_athlete.full_name,
+                'Date of Birth': new_athlete.date_of_birth.strftime('%m/%d/%Y'),
+                'Age_2': str(athlete_age),
                 # Assuming 'Date_Signed' is the current date
-                'Date_Signed[0]': datetime.now().strftime('%m/%d/%Y'),
-                'Players_Address[0]': str(data['streetAddress']),  # Replace with actual parent address field
-                'City__Zip[0]': str(data['city'] + "  " + data['zipcode']),
-                'Phone[0]': new_parent.phone_number,
-                'Email[0]': new_parent.email,
-                'Cell_PhoneEmergency[0]': data['emergencyPhone'],
-                'Contact[0]': data['emergencyName'],
-                'Carrier[0]': data['carrier'],
-                'Policy_Number[0]': data['policyNumber'],
+                'DateSigned': datetime.now().strftime('%m/%d/%Y'),
+                'PlayersAddress': str(data['streetAddress']),  # Replace with actual parent address field
+                'CityZip': str(data['city'] + "  " + data['zipcode']),
+                'Phone': new_parent.phone_number,
+                'Email': new_parent.email,
+                'Cell PhoneEmergency': data['emergencyPhone'],
+                'Contact': data['emergencyName'],
+                'Carrier': data['carrier'],
+                'Policy Number': data['policyNumber'],
                 # Stupid lazy "hack" to align the text on the form correctly
-                'I_declare_under_penalty_of_perjury_that_I_am_a_parent_or_guardian_of[0]':
+                'PlayerName2':
                     ("                                        " + new_athlete.full_name),
                 'Name_Parent_or_Guardian_print[0]': "                    " + new_parent.parent_name,
-                'Date[0]': datetime.now().strftime('%m/%d/%Y'),
+                'Date Signed': datetime.now().strftime('%m/%d/%Y'),
+                'NameOfParent': new_parent.parent_name,
             }
 
             code_of_conduct_form_data = {
@@ -121,7 +124,7 @@ class SignupResource(Resource):
                 'DATED': athlete_data['lastPhysical'],
                 'Player Name Please Print': new_athlete.full_name,
                 'Parents Name Please Print': data['parentName'],
-                'CoachClub Officials Name Please Print':  'Tameisha Warner',
+                'CoachClub Officials Name Please Print': 'Tameisha Warner',
             }
 
             try:
@@ -144,8 +147,9 @@ class SignupResource(Resource):
                 path_to_pdf = os.path.join(temp_directory, output_file)
 
                 # Add signature to pages - Update these x, y, width, height values as needed
-                process_pdf.embed_image_to_pdf(signature_img_path, path_to_pdf, x=80, y=100, width=80, height=35)
-                process_conduct_pdf.embed_image_to_pdf(signature_img_path, path_to_conduct_pdf, x=250, y=45, width=80, height=35)
+                process_pdf.embed_image_to_pdf(signature_img_path, path_to_pdf, x=80, y=162, width=80, height=35)
+                process_conduct_pdf.embed_image_to_pdf(signature_img_path, path_to_conduct_pdf, x=250, y=45, width=80,
+                                                       height=35)
 
                 # Construct pdf link and append to pdf link list
                 pdf_path = os.path.join(temp_directory, output_file)
