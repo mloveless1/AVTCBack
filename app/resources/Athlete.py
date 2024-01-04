@@ -6,9 +6,14 @@ from sqlalchemy import create_engine
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
 from app.database import db
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
-engine = create_engine('mysql+pymysql://root:Iamnotmalo12!@localhost/avtc')  # Update with your database URI
+database_uri = os.getenv('DATABASE_URL')
+
+engine = create_engine(database_uri)  # Update with your database URI
 
 # Request parser for creating/updating Athlete resources
 athlete_parser = reqparse.RequestParser()

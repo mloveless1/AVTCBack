@@ -8,11 +8,17 @@ from flask_cors import CORS
 from .resources import AthleteResource
 from .resources import SignupResource
 from .database import db
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+database_uri = os.getenv('DATABASE_URL')
 
 app = Flask(__name__)
 api = Api(app)
 CORS(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Iamnotmalo12!@localhost/avtc'
+app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # to suppress a warning message
 
 db.init_app(app)

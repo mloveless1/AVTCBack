@@ -6,6 +6,12 @@ from sqlalchemy import create_engine
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
 from app.database import db
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+database_uri = os.getenv('DATABASE_URL')
 
 parent_parser = reqparse.RequestParser()
 parent_parser.add_argument('parentName', type=str, required=True, help='Parent name is required')
@@ -13,7 +19,7 @@ parent_parser.add_argument('email', type=str, required=True, help='Email is requ
 parent_parser.add_argument('phoneNumber', type=str, required=True, help='Phone number is required')
 parent_parser.add_argument('athletes', type=list, location='json', default=[])
 
-engine = create_engine('mysql+pymysql://root:Iamnotmalo12!@localhost/avtc')  # Update with your database URI
+engine = create_engine(database_uri)  # Update with your database URI
 
 
 class ParentResource(Resource):

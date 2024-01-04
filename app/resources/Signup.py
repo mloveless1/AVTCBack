@@ -1,5 +1,6 @@
 import base64
 import os
+from dotenv import load_dotenv
 from datetime import datetime
 
 from flask import request, current_app
@@ -15,7 +16,12 @@ from app.utils.CalculateDivision import calculate_division
 from app.utils.ProcessPdf import ProcessPdf
 from app.utils.EmailNotification import EmailNotification
 
-engine = create_engine('mysql+pymysql://root:Iamnotmalo12!@localhost/avtc')  # Update with your database URI
+database_uri = os.getenv('DATABASE_URL')
+email_sender = os.getenv('NOTIFICATION_EMAIL_SENDER')
+email_receivers = os.getenv('NOTIFICATION_EMAIL_RECEIVERS').split(';')
+
+engine = create_engine(database_uri)  # Update with your database URI
+load_dotenv()
 
 
 class SignupResource(Resource):
@@ -61,6 +67,9 @@ class SignupResource(Resource):
         except IOError as e:
             return {'message': 'Error saving signature image', 'error': str(e)}, 500
 
+        # Initialize sign up summary
+        signup_summary = "Signup Summary:\n"
+
         for athlete_data in data['athletes']:
 
             new_athlete = Athlete(
@@ -76,6 +85,9 @@ class SignupResource(Resource):
             athlete_age = calculate_age(new_athlete.date_of_birth)
             athlete_age_in_year = calculate_age_in_year(new_athlete.date_of_birth)
             athlete_division = calculate_division(athlete_age_in_year)
+
+            signup_summary += f"Name: {new_athlete.full_name}, Division: {athlete_division}\n"
+
             # Determine checkbox values based on gender
             if new_athlete.gender == 'male':
                 boy = 'X'
@@ -164,14 +176,34 @@ class SignupResource(Resource):
         email_helper = EmailNotification(current_app)
 
         subject = '{parent} signed up for AV Track Club'.format(parent=new_parent.parent_name)
-        body = 'Contracts are attached below, not formatted for mobile devices.'
-        recipients = ['malc.loveless@gmail.com']
+        body = f'Contracts are attached below, not formatted for mobile devices.\n\n{signup_summary}'
+        recipients = email_receivers
+        sender = email_sender
 
         # Send email
         email_helper.send_email(subject=subject,
-                                sender='malcolmloveless@gmail.com',
+                                sender=sender,
                                 recipients=recipients,
                                 body=body,
                                 pdf_paths=pdf_links)
+
+        # Remove all temp files
+        for pdf_path in pdf_links:
+            try:
+                os.remove(pdf_path)
+            except OSError as e:
+                # If the file was already deleted or not found, handle the exception here
+                print(f"Error deleting file {pdf_path}: {e.strerror}")
+
+        # Also delete the parent signature image if it's no longer needed
+        try:
+            os.remove(signature_img_path)
+        except OSError as e:
+            print(f"Error deleting signature image {signature_img_path}: {e.strerror}")
+
+        try:
+            os.remove('app/pdfforms/output_files/stamp.pdf')
+        except OSError as e:
+            print(f"Error deleting stamp pdf: {e.strerror}")
 
         return {'message': 'Sign up successful'}, 201
