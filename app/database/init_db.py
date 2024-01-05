@@ -3,7 +3,8 @@ from .base import Base  # Make sure this imports all your models
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+if os.path.exists('.env'):
+    load_dotenv()
 
 database_uri = os.getenv('DATABASE_URL')
 

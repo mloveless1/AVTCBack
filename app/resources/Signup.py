@@ -22,7 +22,9 @@ email_sender = os.getenv('NOTIFICATION_EMAIL_SENDER')
 email_receivers = os.getenv('NOTIFICATION_EMAIL_RECEIVERS').split(';')
 
 engine = create_engine(database_uri)  # Update with your database URI
-load_dotenv()
+
+if os.path.exists('.env'):
+    load_dotenv()
 
 
 class SignupResource(Resource):

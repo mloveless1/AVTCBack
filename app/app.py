@@ -9,7 +9,9 @@ from .database import db
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+if os.path.exists('.env'):
+    load_dotenv()
+
 
 database_uri = os.getenv('DATABASE_URL')
 
@@ -30,8 +32,8 @@ app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_USERNAME'] = 'malcolmloveless@gmail.com'
-app.config['MAIL_PASSWORD'] = 'jcch wzuz wblr bhtl'
+app.config['MAIL_USERNAME'] = os.getenv('NOTIFICATION_EMAIL_SENDER')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 
 # Resource for athletes
 api.add_resource(AthleteResource, '/athletes/<int:athlete_id>')
