@@ -48,7 +48,7 @@ class SignupResource(Resource):
             db.session.commit()
         except SQLAlchemyError as e:
             db.session.rollback()
-            logging.error("Failed on creating parent")
+            logging.error(f"Failed on creating parent: {e}", exc_info=True)
             return {'message': 'Error creating parent', 'error': str(e)}, 500
 
         pdf_links = []
