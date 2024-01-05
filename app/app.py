@@ -19,7 +19,7 @@ app = Flask(__name__)
 api = Api(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # to suppress a warning message
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+CORS(app, resources={r"/*": {"origins": "https://avtc-signup-front-aa5da244bd4a.herokuapp.com/"}})
 app.config['CORS_HEADERS'] = 'Content-Type'
 
 db.init_app(app)
@@ -44,12 +44,9 @@ api.add_resource(SignupResource,'/signup')
 @app.after_request
 def after_request(response):
     header = response.headers
-    header['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    header['Access-Control-Allow-Origin'] = 'https://avtc-signup-front-aa5da244bd4a.herokuapp.com/'
     header['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
     header['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE,OPTIONS'
     header['Access-Control-Allow-Credentials'] = 'true'
     return response
 
-
-if __name__ == '__main__':
-    app.run()
