@@ -8,7 +8,7 @@ class Parent(Base):
     __tablename__ = "parents"
 
     parent_id = Column(Integer, primary_key=True, index=True)
-    parent_name = Column(String(255), unique=True, index=True)
+    parent_name = Column(String(255), unique=False, index=True)
     email = Column(String(255), unique=True, index=True)
     phone_number = Column(String(255))
 
