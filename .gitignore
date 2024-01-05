@@ -1,4 +1,3 @@
 # Output folders
 app/pdfforms/output_files/
 app/pdfforms/signature_images
-.env
