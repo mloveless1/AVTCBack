@@ -151,8 +151,8 @@ class SignupResource(Resource):
                 process_conduct_pdf = ProcessPdf(temp_directory, code_of_conduct_output_file)
 
                 # Add data to pdf forms
-                process_conduct_pdf.add_data_to_pdf('app/pdfforms/CODE_OF_CONDUCT.pdf', code_of_conduct_form_data)
-                process_pdf.add_data_to_pdf('app/pdfforms/PLAYER_CONTRACT.pdf', player_contract_form_data)
+               # process_conduct_pdf.add_data_to_pdf('app/pdfforms/CODE_OF_CONDUCT.pdf', code_of_conduct_form_data)
+                # process_pdf.add_data_to_pdf('app/pdfforms/PLAYER_CONTRACT.pdf', player_contract_form_data)
 
                 # Make paths to pdfs
                 path_to_conduct_pdf = os.path.join(temp_directory, code_of_conduct_output_file)

@@ -3,7 +3,7 @@ from flask_restful import Api
 
 from .database import init_db
 from flask_cors import CORS
-from .resources import AthleteResource
+from .resources import AthleteResource, ParentResource
 from .resources import SignupResource
 from .database import db
 import os
@@ -38,6 +38,7 @@ api.add_resource(AthleteResource, '/athletes/<int:athlete_id>')
 # Resource for signup page
 api.add_resource(SignupResource, '/signup')
 
+api.add_resource(ParentResource, '/parent/<int:parent_id>')
 
 @app.after_request
 def after_request(response):
