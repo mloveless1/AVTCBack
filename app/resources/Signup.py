@@ -1,3 +1,4 @@
+import logging
 import base64
 import os
 from dotenv import load_dotenv
@@ -65,6 +66,7 @@ class SignupResource(Resource):
             with open(signature_img_path, 'wb') as img_file:
                 img_file.write(signature_img)
         except IOError as e:
+            logging.error(f"Couldn't write image: {e}", exc_info=True)
             return {'message': 'Error saving signature image', 'error': str(e)}, 500
 
         # Initialize sign up summary
@@ -151,8 +153,8 @@ class SignupResource(Resource):
                 process_conduct_pdf = ProcessPdf(temp_directory, code_of_conduct_output_file)
 
                 # Add data to pdf forms
-               # process_conduct_pdf.add_data_to_pdf('app/pdfforms/CODE_OF_CONDUCT.pdf', code_of_conduct_form_data)
-                # process_pdf.add_data_to_pdf('app/pdfforms/PLAYER_CONTRACT.pdf', player_contract_form_data)
+                process_conduct_pdf.add_data_to_pdf('app/pdfforms/CODE_OF_CONDUCT.pdf', code_of_conduct_form_data)
+                process_pdf.add_data_to_pdf('app/pdfforms/PLAYER_CONTRACT.pdf', player_contract_form_data)
 
                 # Make paths to pdfs
                 path_to_conduct_pdf = os.path.join(temp_directory, code_of_conduct_output_file)
