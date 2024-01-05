@@ -50,8 +50,8 @@ class SignupResource(Resource):
             return {'message': 'Error creating parent', 'error': str(e)}, 500
 
         pdf_links = []
-        temp_directory = 'app/pdfforms/output_files'
-        signature_dir = 'app/pdfforms/signature_images'  # Update this path as needed
+        temp_directory = '/tmp'
+        signature_dir = '/tmp/signature_images'  # Update this path as needed
 
         if not os.path.exists(signature_dir):
             os.makedirs(signature_dir)
@@ -59,7 +59,7 @@ class SignupResource(Resource):
         # Decode and save the parent signature image
         signature_data = data['signature']
         signature_img = base64.b64decode(signature_data.split(',')[1])
-        signature_img_path = 'app/pdfforms/signature_images/temp_signature.png'
+        signature_img_path = os.path.join(signature_dir, 'temp_signature.png')
 
         try:
             with open(signature_img_path, 'wb') as img_file:
@@ -186,24 +186,5 @@ class SignupResource(Resource):
                                 recipients=recipients,
                                 body=body,
                                 pdf_paths=pdf_links)
-
-        # Remove all temp files
-        for pdf_path in pdf_links:
-            try:
-                os.remove(pdf_path)
-            except OSError as e:
-                # If the file was already deleted or not found, handle the exception here
-                print(f"Error deleting file {pdf_path}: {e.strerror}")
-
-        # Also delete the parent signature image if it's no longer needed
-        try:
-            os.remove(signature_img_path)
-        except OSError as e:
-            print(f"Error deleting signature image {signature_img_path}: {e.strerror}")
-
-        try:
-            os.remove('app/pdfforms/output_files/stamp.pdf')
-        except OSError as e:
-            print(f"Error deleting stamp pdf: {e.strerror}")
 
         return {'message': 'Sign up successful'}, 201
