@@ -1,8 +1,6 @@
 from flask import Flask, jsonify
 from flask_restful import Api
-from flask_sqlalchemy import SQLAlchemy
 
-from app.models import Parent, Athlete
 from .database import init_db
 from flask_cors import CORS
 from .resources import AthleteResource
@@ -38,15 +36,14 @@ app.config['MAIL_PASSWORD'] = 'jcch wzuz wblr bhtl'
 # Resource for athletes
 api.add_resource(AthleteResource, '/athletes/<int:athlete_id>')
 # Resource for signup page
-api.add_resource(SignupResource,'/signup')
+api.add_resource(SignupResource, '/signup')
 
 
 @app.after_request
 def after_request(response):
     header = response.headers
-    header['Access-Control-Allow-Origin'] = 'https://avtc-signup-front-aa5da244bd4a.herokuapp.com/'
+    header['Access-Control-Allow-Origin'] = 'https://avtc-signup-front-aa5da244bd4a.herokuapp.com'
     header['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
     header['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE,OPTIONS'
     header['Access-Control-Allow-Credentials'] = 'true'
     return response
-
