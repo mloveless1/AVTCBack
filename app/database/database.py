@@ -11,8 +11,7 @@ database_uri = os.getenv('DATABASE_URL')
 
 db = SQLAlchemy()
 # Configure the database connection (replace with your database URL)
-DATABASE_URL = "mysql+pymysql://root:Iamnotmalo12!@localhost/avtc"
-engine = create_engine(DATABASE_URL)
+engine = create_engine(database_uri)
 
 # Create a session factory
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
