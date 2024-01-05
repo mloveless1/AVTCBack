@@ -25,7 +25,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 db.init_app(app)
 
 # Run DB setup
-init_db.setup_database()
+# init_db.setup_database()
 
 # Flask-Mail Configs
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
