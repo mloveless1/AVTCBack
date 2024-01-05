@@ -19,9 +19,8 @@ app = Flask(__name__)
 api = Api(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # to suppress a warning message
-app.config['CORS_HEADERS'] = 'Content-Type'
-
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 db.init_app(app)
 
@@ -40,6 +39,16 @@ app.config['MAIL_PASSWORD'] = 'jcch wzuz wblr bhtl'
 api.add_resource(AthleteResource, '/athletes/<int:athlete_id>')
 # Resource for signup page
 api.add_resource(SignupResource,'/signup')
+
+
+@app.after_request
+def after_request(response):
+    header = response.headers
+    header['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    header['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+    header['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE,OPTIONS'
+    header['Access-Control-Allow-Credentials'] = 'true'
+    return response
 
 
 if __name__ == '__main__':
