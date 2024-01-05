@@ -57,7 +57,7 @@ class ProcessPdf:
         image = image.resize((width, height))
 
         # Save the image as a PDF
-        stamp_path = os.path.join(self.temp_directory, 'stamp.pdf')
+        stamp_path = '/tmp/stamp.pdf'
         image.save(stamp_path, 'PDF', resolution=100.0)
 
         return stamp_path
