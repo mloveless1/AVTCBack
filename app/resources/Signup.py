@@ -165,7 +165,7 @@ class SignupResource(Resource):
 
                 # Add signature to pages - Update these x, y, width, height values as needed
                 process_pdf.embed_image_to_pdf(signature_img_path, path_to_pdf, x=80, y=162, width=80, height=35)
-                process_conduct_pdf.embed_image_to_pdf(signature_img_path, path_to_conduct_pdf, x=250, y=45, width=80,
+                process_conduct_pdf.embed_image_to_pdf(signature_img_path, path_to_conduct_pdf, x=250, y=56, width=80,
                                                        height=35)
 
                 # Construct pdf link and append to pdf link list
