@@ -3,6 +3,7 @@ import io
 import csv
 from flask import Response
 from flask_restful import Resource
+from flask_jwt_extended import jwt_required
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from app.models import Athlete, Parent
@@ -14,6 +15,8 @@ if os.path.exists('.env'):
 
 # noinspection PyMethodMayBeStatic
 class PullerResource(Resource):
+
+    @jwt_required()
     def get(self):
         # Load database URI from environment variable
         database_uri = os.getenv('DATABASE_URL')
@@ -32,7 +35,7 @@ class PullerResource(Resource):
 
             # Create a CSV in memory
             output = io.StringIO()
-            writer = csv.writer(output, delimiter=';')
+            writer = csv.writer(output, delimiter=';', quoting=csv.QUOTE_MINIMAL)
 
             team_abbr = "V"
             team_name = "ANTELOPE VALLEY"

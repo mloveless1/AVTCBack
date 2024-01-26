@@ -1,9 +1,9 @@
 from flask import Flask
 from flask_restful import Api
-
+from flask_jwt_extended import JWTManager
 # from .database import init_db
 from flask_cors import CORS
-from .resources import AthleteResource, ParentResource, PullerResource
+from .resources import AthleteResource, ParentResource, PullerResource, LoginResource
 from .resources import SignupResource
 from .database import db
 import os
@@ -28,6 +28,7 @@ db.init_app(app)
 # init_db.setup_database()
 
 # Flask-Mail Configs
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
@@ -35,6 +36,9 @@ app.config['MAIL_USE_SSL'] = False
 app.config['MAIL_USERNAME'] = 'malcolmloveless@gmail.com'
 app.config['MAIL_PASSWORD'] = 'jcch wzuz wblr bhtl'
 
+jwt = JWTManager(app)
+
+api.add_resource(LoginResource, '/login')
 api.add_resource(AthleteResource, '/athletes/<int:athlete_id>')
 api.add_resource(SignupResource, '/signup')
 api.add_resource(ParentResource, '/parent/<int:parent_id>')
