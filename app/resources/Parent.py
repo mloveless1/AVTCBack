@@ -23,6 +23,7 @@ parent_parser.add_argument('athletes', type=list, location='json', default=[])
 engine = create_engine(database_uri)  # Update with your database URI
 
 
+# noinspection PyMethodMayBeStatic
 class ParentResource(Resource):
     def post(self):
         args = parent_parser.parse_args()

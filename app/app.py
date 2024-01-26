@@ -1,7 +1,7 @@
-from flask import Flask, jsonify
+from flask import Flask
 from flask_restful import Api
 
-from .database import init_db
+# from .database import init_db
 from flask_cors import CORS
 from .resources import AthleteResource, ParentResource, PullerResource
 from .resources import SignupResource

@@ -3,7 +3,7 @@ import io
 import csv
 from flask import Response
 from flask_restful import Resource
-from sqlalchemy import create_engine, func
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from app.models import Athlete, Parent
 from dotenv import load_dotenv
@@ -12,6 +12,7 @@ if os.path.exists('.env'):
     load_dotenv()
 
 
+# noinspection PyMethodMayBeStatic
 class PullerResource(Resource):
     def get(self):
         # Load database URI from environment variable
@@ -25,6 +26,7 @@ class PullerResource(Resource):
 
         try:
             # Perform a JOIN query between Athletes and Parents
+            # noinspection PyTypeChecker
             query = session.query(Athlete, Parent).join(Parent, Athlete.parent_id == Parent.parent_id)
             results = query.all()
 
@@ -32,21 +34,24 @@ class PullerResource(Resource):
             output = io.StringIO()
             writer = csv.writer(output, delimiter=';')
 
-            TEAM_ABBR = "V"
-            TEAM_NAME = "ANTELOPE VALLEY"
+            team_abbr = "V"
+            team_name = "ANTELOPE VALLEY"
 
             for athlete, parent in results:
 
                 athlete_name_tokens = athlete.full_name.split()
                 first_name, last_name = athlete_name_tokens[0], athlete_name_tokens[1]
 
+                gender = athlete.gender
                 if athlete.gender == 'male':
                     gender = 'B'
                 elif athlete.gender == 'female':
                     gender = 'G'
 
                 # Format data as per the provided structure
-                formatted_data = (f"I;{last_name};{first_name};{gender};{TEAM_ABBR};{TEAM_NAME};{parent.parent_name}"
+                formatted_data = (f"I;{last_name};{first_name};"
+                                  f"{gender};{team_abbr};"
+                                  f"{team_name};{parent.parent_name}"
                                   f";{parent.phone_number};{parent.phone_number};;;;;;;")
                 writer.writerow([formatted_data])
 

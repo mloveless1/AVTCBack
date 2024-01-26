@@ -27,6 +27,7 @@ email_receivers = os.getenv('NOTIFICATION_EMAIL_RECEIVERS').split(';')
 engine = create_engine(database_uri)  # Update with your database URI
 
 
+# noinspection PyMethodMayBeStatic
 class SignupResource(Resource):
     def post(self):
         session = Session(bind=engine)
