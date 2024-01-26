@@ -3,6 +3,7 @@ import pdfrw
 from PIL import Image
 
 
+# noinspection PyMethodMayBeStatic
 class ProcessPdf:
     def __init__(self, temp_directory, output_file):
         self.temp_directory = temp_directory
