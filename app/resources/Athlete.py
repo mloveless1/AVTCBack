@@ -24,8 +24,7 @@ athlete_parser.add_argument('gender', type=str, required=True, choices=('male', 
 athlete_parser.add_argument('returner_status', type=str, required=True, choices=('new', 'returner'))
 
 
-# Resource class for managing Athletes
-
+# noinspection PyMethodMayBeStatic
 class AthleteResource(Resource):
     def post(self):
         args = athlete_parser.parse_args()
