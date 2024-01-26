@@ -17,14 +17,14 @@ from app.utils.CalculateDivision import calculate_division
 from app.utils.ProcessPdf import ProcessPdf
 from app.utils.EmailNotification import EmailNotification
 
+if os.path.exists('.env'):
+    load_dotenv()
+
 database_uri = os.getenv('DATABASE_URL')
 email_sender = os.getenv('NOTIFICATION_EMAIL_SENDER')
 email_receivers = os.getenv('NOTIFICATION_EMAIL_RECEIVERS').split(';')
 
 engine = create_engine(database_uri)  # Update with your database URI
-
-if os.path.exists('.env'):
-    load_dotenv()
 
 
 class SignupResource(Resource):
