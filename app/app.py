@@ -1,22 +1,13 @@
-<<<<<<< HEAD
 import os
-
 from dotenv import load_dotenv
-from flask import Flask
-from flask_cors import CORS
-from flask_restful import Api
-
 from .database import db
-from .resources import AthleteResource, ParentResource
-=======
 from flask import Flask
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
 # from .database import init_db
 from flask_cors import CORS
-from .resources import AthleteResource, ParentResource, PullerResource, LoginResource
->>>>>>> 99be4270c8c81035629328f9f6ec72b81fc7deaf
-from .resources import SignupResource
+from .resources import AthleteResource, ParentResource, PullerResource
+from .resources import SignupResource, LoginResource
 
 if os.path.exists('.env'):
     load_dotenv()
@@ -53,7 +44,6 @@ api.add_resource(ParentResource, '/parent/<int:parent_id>')
 api.add_resource(PullerResource, '/puller')
 
 
-
 @app.after_request
 def after_request(response):
     header = response.headers
@@ -62,10 +52,7 @@ def after_request(response):
     header['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE,OPTIONS'
     header['Access-Control-Allow-Credentials'] = 'true'
     return response
-<<<<<<< HEAD
-=======
 
 
 if __name__ == '__main__':
     app.run()
->>>>>>> 99be4270c8c81035629328f9f6ec72b81fc7deaf
