@@ -17,7 +17,8 @@
 
                     if (response.ok) {
                         // Handle CSV data here
-                        const csvData = await response.text(); // Get the CSV data as text
+                        let csvData = await response.text(); // Get the CSV data as text
+                        csvData = csvData.replace(/"/g, '');
                         document.getElementById('data').textContent = csvData;
                     } else {
                         console.error('Failed to fetch data');

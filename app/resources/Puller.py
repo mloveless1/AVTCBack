@@ -43,7 +43,7 @@ class PullerResource(Resource):
             for athlete, parent in results:
 
                 athlete_name_tokens = athlete.full_name.split()
-                first_name, last_name = athlete_name_tokens[0], athlete_name_tokens[1]
+                first_name, last_name = str(athlete_name_tokens[0]), str(athlete_name_tokens[1])
 
                 gender = athlete.gender
                 if athlete.gender == 'male':
@@ -51,11 +51,15 @@ class PullerResource(Resource):
                 elif athlete.gender == 'female':
                     gender = 'G'
 
+                parent_name = str(parent.parent_name).replace('  ', ' ').strip()
+                email = str(parent.email).strip()
+                phone = str(parent.phone_number).strip()
+
                 # Format data as per the provided structure
-                formatted_data = (f"I;{last_name};{first_name};"
+                formatted_data = (f"I;{last_name.strip()};{first_name.strip()};"
                                   f"{gender};{team_abbr};"
-                                  f"{team_name};{parent.parent_name}"
-                                  f";{parent.phone_number};{parent.phone_number};;;;;;;")
+                                  f"{team_name};{parent_name}"
+                                  f";{phone};{email};;;;;;;")
                 writer.writerow([formatted_data])
 
             # Reset the file pointer to the beginning

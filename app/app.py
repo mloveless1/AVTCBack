@@ -44,6 +44,7 @@ api.add_resource(ParentResource, '/parent/<int:parent_id>')
 api.add_resource(PullerResource, '/puller')
 
 
+# Frontend pages rendered from the server to extract data to text without the need for postman
 @app.route('/signin', methods=['GET'])
 def login_page():
     return render_template('login.html')
@@ -52,6 +53,7 @@ def login_page():
 @app.route('/fetch_csv', methods=['GET'])
 def fetch_csv():
     return render_template('fetch_csv.html')
+
 
 @app.after_request
 def after_request(response):
