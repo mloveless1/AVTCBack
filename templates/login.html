@@ -23,6 +23,7 @@
                 // Store the token in localStorage
                 localStorage.setItem('jwt_token', data.access_token);
                 alert('Login successful!');
+                window.location.replace("/fetch_csv")
             } else {
                 alert('Login failed!');
             }
