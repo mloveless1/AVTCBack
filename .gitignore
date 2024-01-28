@@ -1,4 +1,10 @@
 # Output folders
 app/pdfforms/output_files/
 app/pdfforms/signature_images
+
+# Local env variables
 .env
+
+# pycache and .pyc
+__pycache__/
+*.pyc
