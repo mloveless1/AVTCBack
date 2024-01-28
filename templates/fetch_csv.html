@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fetch Data</title>
+    <script>
+        async function fetchData() {
+            const token = localStorage.getItem('jwt_token');
+            if (token) {
+                try {
+                    const response = await fetch('/puller', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                        }
+                    });
+
+                    if (response.ok) {
+                        // Handle CSV data here
+                        const csvData = await response.text(); // Get the CSV data as text
+                        document.getElementById('data').textContent = csvData;
+                    } else {
+                        console.error('Failed to fetch data');
+                        document.getElementById('data').textContent = 'Failed to fetch data';
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    document.getElementById('data').textContent = 'An error occurred while fetching data';
+                }
+            } else {
+                console.log('No token found. Please login first.');
+                document.getElementById('data').textContent = 'No token found. Please login first.';
+            }
+        }
+    </script>
+</head>
+<body>
+    <h2>Fetch data for meet manager</h2>
+    <button onclick="fetchData()">Fetch Data</button>
+    <pre id="data">CSV data will appear here after fetching. Copy and paste to text file.</pre>
+</body>
+</html>

@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from .database import db
-from flask import Flask
+from flask import Flask, render_template
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
 # from .database import init_db
@@ -14,7 +14,7 @@ if os.path.exists('.env'):
 
 database_uri = os.getenv('DATABASE_URL')
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../templates')
 api = Api(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # to suppress a warning message
@@ -43,6 +43,15 @@ api.add_resource(SignupResource, '/signup')
 api.add_resource(ParentResource, '/parent/<int:parent_id>')
 api.add_resource(PullerResource, '/puller')
 
+
+@app.route('/signin', methods=['GET'])
+def login_page():
+    return render_template('login.html')
+
+
+@app.route('/fetch_csv', methods=['GET'])
+def fetch_csv():
+    return render_template('fetch_csv.html')
 
 @app.after_request
 def after_request(response):

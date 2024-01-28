@@ -1,3 +1,4 @@
+import os
 from flask import jsonify
 from flask_restful import Resource, reqparse, abort
 from app.models import Parent
@@ -6,7 +7,6 @@ from sqlalchemy import create_engine
 from datetime import datetime
 from sqlalchemy.exc import SQLAlchemyError
 from app.database import db
-import os
 from dotenv import load_dotenv
 
 if os.path.exists('.env'):
