@@ -1,6 +1,7 @@
 <!-- templates/login.html -->
 
 <!DOCTYPE html>
+<!--suppress HtmlFormInputWithoutLabel -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -21,6 +22,7 @@
             if (response.ok) {
                 const data = await response.json();
                 // Store the token in localStorage
+                // noinspection JSUnresolvedReference
                 localStorage.setItem('jwt_token', data.access_token);
                 alert('Login successful!');
                 window.location.replace("/fetch_csv")

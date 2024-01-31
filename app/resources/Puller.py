@@ -37,8 +37,8 @@ class PullerResource(Resource):
             output = io.StringIO()
             writer = csv.writer(output, delimiter=';', quoting=csv.QUOTE_MINIMAL)
 
-            team_abbr = "V"
-            team_name = "ANTELOPE VALLEY"
+            team_abbr = "AVTC"
+            team_name = "ANTELOPE VALLEY TRACK CLUB"
 
             for athlete, parent in results:
 
@@ -56,10 +56,10 @@ class PullerResource(Resource):
                 phone = str(parent.phone_number).strip()
 
                 # Format data as per the provided structure
-                formatted_data = (f"I;{last_name.strip()};{first_name.strip()};"
-                                  f"{gender};{team_abbr};"
-                                  f"{team_name};{parent_name}"
-                                  f";{phone};{email};;;;;;;")
+                formatted_data = (f"{last_name.strip()};{first_name.strip()};;"
+                                  f"{gender};{athlete.date_of_birth};{team_abbr};"
+                                  f"{team_name};;;{parent_name};STREETADDRESS;CITY;STATE;ZIP;COUNTRY"
+                                  f";{phone};;;;;;{email};;;;;;;")
                 writer.writerow([formatted_data])
 
             # Reset the file pointer to the beginning

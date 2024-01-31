@@ -8,6 +8,7 @@ if os.path.exists('.env'):
 
 database_uri = os.getenv('DATABASE_URL')
 
+
 def setup_database():
     engine = create_engine(database_uri)
     # Create an inspector to check for tables
