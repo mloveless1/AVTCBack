@@ -56,10 +56,10 @@ class PullerResource(Resource):
                 phone = str(parent.phone_number).strip()
 
                 # Format data as per the provided structure
-                formatted_data = (f"{last_name.strip()};{first_name.strip()};;"
+                formatted_data = (f";{last_name.strip()};{first_name.strip()};;"
                                   f"{gender};{athlete.date_of_birth};{team_abbr};"
-                                  f"{team_name};;;{parent_name};STREETADDRESS;CITY;STATE;ZIP;COUNTRY"
-                                  f";{phone};;;;;;{email};;;;;;;")
+                                  f"{team_name};;;{parent_name};STREETADDRESS;CITY;STATE;ZIP;COUNTRY;"
+                                  f"{phone};;;;;;;{email}")
                 writer.writerow([formatted_data])
 
             # Reset the file pointer to the beginning
