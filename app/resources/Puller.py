@@ -43,7 +43,13 @@ class PullerResource(Resource):
             for athlete, parent in results:
 
                 athlete_name_tokens = athlete.full_name.split()
-                first_name, last_name = str(athlete_name_tokens[0]), str(athlete_name_tokens[1])
+                first_name, last_name= str(athlete_name_tokens[0]).capitalize().strip(), str(athlete_name_tokens[1])
+
+                suffix = ''
+                if len(athlete_name_tokens) == 3:
+                    suffix = ' ' + str(athlete_name_tokens[2])
+
+                last_name = (last_name + suffix).title().strip()
 
                 gender = athlete.gender
                 if athlete.gender == 'male':
@@ -51,14 +57,14 @@ class PullerResource(Resource):
                 elif athlete.gender == 'female':
                     gender = 'G'
 
-                parent_name = str(parent.parent_name).replace('  ', ' ').strip()
+                parent_name = str(parent.parent_name).replace('  ', ' ').strip().title()
                 email = str(parent.email).strip()
                 phone = str(parent.phone_number).strip()
 
                 # Format data as per the provided structure
-                formatted_data = (f"I;{last_name.strip()};{first_name.strip()};;"
+                formatted_data = (f"I;{last_name};{first_name};;"
                                   f"{gender};{athlete.date_of_birth};{team_abbr};"
-                                  f"{team_name};;;{parent_name};"
+                                  f"{team_name};;;{parent_name.title()};"
                                   f"STREETADDRESS;CITY;STATE;"
                                   f"ZIP;COUNTRY;"
                                   f"{phone};;;;;;;{email}")
