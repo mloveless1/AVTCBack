@@ -1,6 +1,6 @@
-from flask import jsonify
+from flask import jsonify, request
 from flask_restful import Resource, reqparse, abort
-from app.models import Athlete
+from app.models import Athlete, Parent
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from datetime import datetime
@@ -27,12 +27,18 @@ athlete_parser.add_argument('returner_status', type=str, required=True, choices=
 # noinspection PyMethodMayBeStatic
 class AthleteResource(Resource):
     def post(self):
+        session = Session(bind=engine)
+
+        data = request.get_json()
+        parent = session.query(Parent).filter(Parent.email == data['email']).first()
+
         args = athlete_parser.parse_args()
         new_athlete = Athlete(
             full_name=args['full_name'],
             date_of_birth=args['date_of_birth'],
             gender=args['gender'],
             returner_status=args['returner_status'],
+            parent_id=parent.parent_id,
         )
         db.session.add(new_athlete)
         try:

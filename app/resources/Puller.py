@@ -58,7 +58,9 @@ class PullerResource(Resource):
                 # Format data as per the provided structure
                 formatted_data = (f";{last_name.strip()};{first_name.strip()};;"
                                   f"{gender};{athlete.date_of_birth};{team_abbr};"
-                                  f"{team_name};;;{parent_name};STREETADDRESS;CITY;STATE;ZIP;COUNTRY;"
+                                  f"{team_name};;;{parent_name};"
+                                  f"STREETADDRESS;CITY;STATE;"
+                                  f"ZIP;COUNTRY;"
                                   f"{phone};;;;;;;{email}")
                 writer.writerow([formatted_data])
 
