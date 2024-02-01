@@ -1,6 +1,7 @@
 import os
 import io
 import csv
+from datetime import datetime
 from flask import Response
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required
@@ -57,13 +58,17 @@ class PullerResource(Resource):
                 elif athlete.gender == 'female':
                     gender = 'G'
 
+                # Convert date_of_birth to mm/dd/yyyy format
+                date_of_birth_obj = datetime.strptime(str(athlete.date_of_birth), '%Y-%m-%d')
+                formatted_date_of_birth = date_of_birth_obj.strftime('%m/%d/%Y')
+
                 parent_name = str(parent.parent_name).replace('  ', ' ').strip().title()
                 email = str(parent.email).strip()
                 phone = str(parent.phone_number).strip()
 
                 # Format data as per the provided structure
                 formatted_data = (f"I;{last_name};{first_name};;"
-                                  f"{gender};{athlete.date_of_birth};{team_abbr};"
+                                  f"{gender};{formatted_date_of_birth};{team_abbr};"
                                   f"{team_name};;;{parent_name.title()};"
                                   f"STREETADDRESS;CITY;STATE;"
                                   f"ZIP;COUNTRY;"
