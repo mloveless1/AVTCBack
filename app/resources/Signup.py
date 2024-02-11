@@ -16,6 +16,7 @@ from app.utils.CalculateAge import calculate_age, calculate_age_in_year
 from app.utils.CalculateDivision import calculate_division
 from app.utils.ProcessPdf import ProcessPdf
 from app.utils.EmailNotification import EmailNotification
+from app.tasks import send_async_email
 
 if os.path.exists('.env'):
     load_dotenv()
@@ -179,7 +180,7 @@ class SignupResource(Resource):
                 return {'message': 'Error creating athlete', 'error': str(e)}, 500
 
         # Construct email
-        email_helper = EmailNotification(current_app)
+       # email_helper = EmailNotification(current_app)
 
         subject = '{parent} signed up for AV Track Club'.format(parent=new_parent.parent_name)
         body = f'Contracts are attached below, not formatted for mobile devices.\n\n{signup_summary}'
@@ -187,10 +188,15 @@ class SignupResource(Resource):
         sender = email_sender
 
         # Send email
-        email_helper.send_email(subject=subject,
-                                sender=sender,
-                                recipients=recipients,
-                                body=body,
-                                pdf_paths=pdf_links)
+        # email_helper.send_email(subject=subject,
+         #                       sender=sender,
+          #                      recipients=recipients,
+           #                     body=body,
+            #                    pdf_paths=pdf_links)
 
+        send_async_email(subject=subject,
+                         sender=sender,
+                         recipients=recipients,
+                         body=body,
+                         pdf_paths=pdf_links)
         return {'message': 'Sign up successful'}, 201
