@@ -3,6 +3,7 @@ from flask import Flask, jsonify, render_template
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
+from flask_mail import Mail
 from dotenv import load_dotenv
 from celery import Celery
 
@@ -30,6 +31,7 @@ def create_app():
     app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 
     CORS(app, resources={r"/*": {"origins": "*"}})
+    Mail(app)
     db.init_app(app)
     JWTManager(app)
     Api(app).add_resource(LoginResource, '/login')
