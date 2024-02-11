@@ -1,50 +1,67 @@
 import os
-from dotenv import load_dotenv
-from .database import db
-from flask import Flask, render_template
+from flask import Flask, jsonify, render_template
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
-# from .database import init_db
 from flask_cors import CORS
-from .resources import AthleteResource, ParentResource, PullerResource
-from .resources import SignupResource, LoginResource
+from dotenv import load_dotenv
+from celery import Celery
+
+# Import your resources
+from .database import db
+from .resources import AthleteResource, ParentResource, SignupResource, LoginResource, PullerResource
 
 if os.path.exists('.env'):
     load_dotenv()
 
 database_uri = os.getenv('DATABASE_URL')
 
-app = Flask(__name__, template_folder='../templates')
-api = Api(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # to suppress a warning message
-CORS(app, resources={r"/*": {"origins": "*"}})
-app.config['CORS_HEADERS'] = 'Content-Type'
 
-db.init_app(app)
+# Function to create Flask app
+def create_app():
+    app = Flask(__name__, template_folder='../templates')
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
+    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 587
+    app.config['MAIL_USE_TLS'] = True
+    app.config['MAIL_USE_SSL'] = False
+    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 
-# Run DB setup
-# init_db.setup_database()
+    CORS(app, resources={r"/*": {"origins": "*"}})
+    db.init_app(app)
+    JWTManager(app)
+    Api(app).add_resource(LoginResource, '/login')
+    Api(app).add_resource(AthleteResource, '/athletes/<int:athlete_id>')
+    Api(app).add_resource(SignupResource, '/signup')
+    Api(app).add_resource(ParentResource, '/parent/<int:parent_id>')
+    Api(app).add_resource(PullerResource, '/puller')
 
-# Flask-Mail Configs
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_USERNAME'] = 'malcolmloveless@gmail.com'
-app.config['MAIL_PASSWORD'] = 'jcch wzuz wblr bhtl'
-
-jwt = JWTManager(app)
-
-api.add_resource(LoginResource, '/login')
-api.add_resource(AthleteResource, '/athletes/<int:athlete_id>')
-api.add_resource(SignupResource, '/signup')
-api.add_resource(ParentResource, '/parent/<int:parent_id>')
-api.add_resource(PullerResource, '/puller')
+    return app
 
 
-# Frontend pages rendered from the server to extract data to text without the need for postman
+# Initialize your Flask application
+app = create_app()
+
+
+# Initialize Celery
+def make_celery(app):
+    cel = Celery(app.import_name, broker='redis://localhost:6379/0')  # Adjust for your broker settings
+    cel.conf.update(app.config)
+
+    class ContextTask(cel.Task):
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return self.run(*args, **kwargs)
+
+    cel.Task = ContextTask
+    return cel
+
+
+celery = make_celery(app)
+
+# Rest of your Flask app routes and functions
 @app.route('/signin', methods=['GET'])
 def login_page():
     return render_template('login.html')

@@ -1,6 +1,6 @@
-import logging
-import base64
 import os
+import base64
+import logging
 from dotenv import load_dotenv
 from datetime import datetime
 
