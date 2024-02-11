@@ -49,7 +49,7 @@ app = create_app()
 
 # Initialize Celery
 def make_celery(app):
-    cel = Celery(app.import_name, broker='redis://localhost:6379/0')  # Adjust for your broker settings
+    cel = Celery(app.import_name, broker='redis-13516.c92.us-east-1-3.ec2.cloud.redislabs.com:13516')
     cel.conf.update(app.config)
 
     class ContextTask(cel.Task):
@@ -62,6 +62,11 @@ def make_celery(app):
 
 
 celery = make_celery(app)
+
+
+@app.route('/', methods=['GET', 'POST', 'PUT', 'DELETE'])
+def index_page():
+    return jsonify({"Message": "You don't belong here, please leave thanks"})
 
 
 # Rest of your Flask app routes and functions
