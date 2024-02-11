@@ -31,6 +31,7 @@ engine = create_engine(database_uri)  # Update with your database URI
 # noinspection PyMethodMayBeStatic
 class SignupResource(Resource):
     def post(self):
+        logging.info("Spinning up sign up")
         session = Session(bind=engine)
 
         data = request.get_json()
@@ -46,9 +47,8 @@ class SignupResource(Resource):
         if existing_parent:
             return {'message': 'A user with this email already exists'}, 409
 
-        db.session.add(new_parent)
-
         try:
+            db.session.add(new_parent)
             db.session.commit()
         except SQLAlchemyError as e:
             db.session.rollback()
@@ -194,6 +194,7 @@ class SignupResource(Resource):
            #                     body=body,
             #                    pdf_paths=pdf_links)
 
+        logging.info("Sending async email")
         send_async_email(subject=subject,
                          sender=sender,
                          recipients=recipients,
