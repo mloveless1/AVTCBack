@@ -7,7 +7,7 @@ import logging
 
 
 @celery_app.task(bind=True)
-def send_async_email(subject, sender, recipients, body, pdf_paths=None):
+def send_async_email(self, subject, sender, recipients, body, pdf_paths=None):
     logging.info(f"Sending email to {recipients}")
     try:
         app = current_app._get_current_object()
