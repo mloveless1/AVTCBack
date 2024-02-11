@@ -31,7 +31,7 @@ def create_app():
     app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 
     CORS(app, resources={r"/*": {"origins": "*"}})
-    Mail(app)
+    mail = Mail(app)
     db.init_app(app)
     JWTManager(app)
     Api(app).add_resource(LoginResource, '/login')
@@ -62,6 +62,7 @@ def make_celery(app):
 
 
 celery = make_celery(app)
+
 
 # Rest of your Flask app routes and functions
 @app.route('/signin', methods=['GET'])
