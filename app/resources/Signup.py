@@ -195,6 +195,7 @@ class SignupResource(Resource):
             #                    pdf_paths=pdf_links)
 
         logging.info("Sending async email")
+
         send_async_email(subject=subject,
                          sender=sender,
                          recipients=recipients,
