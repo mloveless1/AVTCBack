@@ -83,7 +83,7 @@ def fetch_csv():
 @app.after_request
 def after_request(response):
     header = response.headers
-    header['Access-Control-Allow-Origin'] = '*'
+    header['Access-Control-Allow-Origin'] = 'https://avtc-signup-front-aa5da244bd4a.herokuapp.com'
     header['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
     header['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE,OPTIONS'
     header['Access-Control-Allow-Credentials'] = 'true'
