@@ -54,7 +54,7 @@ def make_celery(app):
     redis_password = os.getenv('REDIS_PASSWORD')
     db_number = "0"  # Change if you use a different database number
 
-    broker_url = os.getenv('REDISCLOUD_URL')
+    broker_url = f"redis://:{redis_password}@{redis_url}:{redis_port}/{db_number}"
     cel = Celery(app.import_name, broker=broker_url)
     cel.conf.update(app.config)
 
