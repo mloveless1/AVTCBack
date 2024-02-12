@@ -49,7 +49,13 @@ app = create_app()
 
 # Initialize Celery
 def make_celery(app):
-    cel = Celery(app.import_name, broker='redis-13516.c92.us-east-1-3.ec2.cloud.redislabs.com:13516')
+    redis_url = os.getenv('REDIS_URL')
+    redis_port = os.getenv('REDIS_PORT')
+    redis_password = os.getenv('REDIS_PASSWORD')
+    db_number = "0"  # Change if you use a different database number
+
+    broker_url = f"redis://:{redis_password}@{redis_url}:{redis_port}/{db_number}"
+    cel = Celery(app.import_name, broker=broker_url)
     cel.conf.update(app.config)
 
     class ContextTask(cel.Task):
