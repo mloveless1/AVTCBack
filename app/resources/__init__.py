@@ -1,3 +1,4 @@
+from .routes import initialize_routes
 from .Login import LoginResource
 from .Athlete import AthleteResource
 from .Parent import ParentResource

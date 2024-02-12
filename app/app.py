@@ -1,4 +1,5 @@
 import os
+from .resources import initialize_routes
 from flask import Flask, jsonify, render_template
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
@@ -9,7 +10,6 @@ from celery import Celery
 
 # Import your resources
 from .database import db
-from .resources import AthleteResource, ParentResource, SignupResource, LoginResource, PullerResource
 
 if os.path.exists('.env'):
     load_dotenv()
@@ -31,14 +31,12 @@ def create_app():
     app.config['MAIL_PASSWORD'] = 'jcch wzuz wblr bhtl'
 
     CORS(app, resources={r"/*": {"origins": "*"}})
+
     mail = Mail(app)
     db.init_app(app)
     JWTManager(app)
-    Api(app).add_resource(LoginResource, '/login')
-    Api(app).add_resource(AthleteResource, '/athletes/<int:athlete_id>')
-    Api(app).add_resource(SignupResource, '/signup')
-    Api(app).add_resource(ParentResource, '/parent/<int:parent_id>')
-    Api(app).add_resource(PullerResource, '/puller')
+    api = Api(app)
+    initialize_routes(api)
 
     return app
 
@@ -50,7 +48,8 @@ app = create_app()
 # Initialize Celery
 def make_celery(app):
     broker_url = os.getenv('REDISCLOUD_URL')
-    cel = Celery(app.import_name, broker=broker_url)
+    print("Broker URL:", broker_url)  # Add this line for debugging
+    cel = Celery(app.import_name, broker='redis://default:NlzE1b8wr6mvYesJoyGbuvoyKV6bqfdj@redis-13516.c92.us-east-1-3.ec2.cloud.redislabs.com:13516')
     cel.conf.update(app.config)
 
     class ContextTask(cel.Task):
