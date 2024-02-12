@@ -50,7 +50,7 @@ app = create_app()
 def make_celery(app):
     broker_url = os.getenv('REDISCLOUD_URL')
     print("Broker URL:", broker_url)  # Add this line for debugging
-    cel = Celery(app.import_name, broker='redis://default:NlzE1b8wr6mvYesJoyGbuvoyKV6bqfdj@redis-13516.c92.us-east-1-3.ec2.cloud.redislabs.com:13516')
+    cel = Celery(app.import_name, broker=broker_url)
     cel.conf.update(app.config)
 
     class ContextTask(cel.Task):
