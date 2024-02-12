@@ -20,6 +20,7 @@ database_uri = os.getenv('DATABASE_URL')
 # Function to create Flask app
 def create_app():
     app = Flask(__name__, template_folder='../templates')
+    app.config['BROKER_TRANSPORT'] = 'redis'
     app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
