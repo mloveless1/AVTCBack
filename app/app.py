@@ -48,7 +48,7 @@ app = create_app()
 
 # Initialize Celery
 def make_celery(app):
-    broker_url = os.getenv('REDISCLOUD_URL')
+    broker_url = os.getenv('REDIS_URL')
     print("Broker URL:", broker_url)  # Add this line for debugging
     cel = Celery(app.import_name, broker=broker_url)
     cel.conf.update(app.config)
