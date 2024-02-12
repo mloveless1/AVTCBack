@@ -27,7 +27,7 @@ def send_async_email(self, subject, sender, recipients, body, pdf_paths=None):
 
 
 @celery_app.task(bind=True)
-def process_pdf_async(athlete_data, signature_img_path, template_path, output_file, x, y, width, height):
+def process_pdf_async(self, athlete_data, signature_img_path, template_path, output_file, x, y, width, height):
     temp_directory = '/tmp'  # Define your temp directory for PDFs
     try:
         # Initialize the PDF processor
