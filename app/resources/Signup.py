@@ -101,22 +101,7 @@ class SignupResource(Resource):
 
             output_file_contract = f"contract_{athlete.full_name}.pdf"
             output_file_code_of_conduct = f"code_of_conduct_{athlete.full_name}.pdf"
-            # Enqueue PDF processing tasks
-            process_pdf_async.delay(
-                athlete_data=form_data['player_contract_form_data'],
-                signature_img_path=signature_img_path,
-                template_path='app/pdfforms/PLAYER_CONTRACT.pdf',
-                output_file=output_file_contract,
-                x=80, y=171, width=80, height=35
-            )
-            process_pdf_async.delay(
-                athlete_data=form_data['code_of_conduct_form_data'],
-                signature_img_path=signature_img_path,
-                template_path='app/pdfforms/CODE_OF_CONDUCT.pdf',
-                output_file=output_file_code_of_conduct,
-                x=250, y=45, width=80, height=35  # Adjust as needed
-            )
-
+            
         # build email
         subject = '{parent} signed up for AV Track Club'.format(parent=new_parent.parent_name)
         body = f'Contracts are attached below, not formatted for mobile devices.\n\n{signup_summary}'
