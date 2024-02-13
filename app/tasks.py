@@ -4,7 +4,7 @@ import logging
 from celery import current_app as celery_app
 from flask_mail import Message
 from flask import current_app
-from app.utils import ProcessPdf
+from app.utils.ProcessPdf import ProcessPdf
 
 
 @celery_app.task(bind=True)
