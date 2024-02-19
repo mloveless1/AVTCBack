@@ -144,7 +144,8 @@ class SignupResource(Resource):
         return {'message': 'Sign up successful'}, 201
 
     def get_athlete_form_data(self, athlete: Athlete, parent: Parent,
-                              data: any, athlete_age: int, athlete_division: str, med_cond='', last_phy='') -> dict:
+                              data: any, athlete_age: int, athlete_division: str,
+                              med_cond='', last_phy='') -> dict:
         data_dict = {}
         # Determine checkbox values based on gender
         boy, girl = ('X', ' ') if athlete.gender == 'male' else (' ', 'X')

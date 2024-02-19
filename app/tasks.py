@@ -30,6 +30,7 @@ def send_async_email(self, subject: str, sender: str, recipients: str, body: str
 @celery_app.task(bind=True)
 def process_pdf_async(self, athlete_data, signature_img_path, template_path, output_file, x, y, width, height):
     temp_directory = '/tmp'  # Define your temp directory for PDFs
+    path_to_pdf = os.path.join(temp_directory, output_file)
     try:
         # Initialize the PDF processor
         pdf_processor = ProcessPdf(temp_directory, output_file)
@@ -39,7 +40,7 @@ def process_pdf_async(self, athlete_data, signature_img_path, template_path, out
 
         # Embed the signature image into the PDF
         # Note: Adjust x, y, width, height, and page_number as needed
-        pdf_processor.embed_image_to_pdf(signature_img_path, os.path.join(temp_directory, output_file),
+        pdf_processor.embed_image_to_pdf(signature_img_path, path_to_pdf,
                                          x=x, y=y, width=width, height=height)
 
         logging.info(f"PDF processing complete for {athlete_data.get('full_name', 'Unknown')}")
