@@ -8,7 +8,7 @@ from app.utils.ProcessPdf import ProcessPdf
 
 
 @celery_app.task(bind=True)
-def send_async_email(self, subject, sender, recipients, body, pdf_paths=None):
+def send_async_email(self, subject: str, sender: str, recipients: str, body: str, pdf_paths: list= None) -> None:
     logging.info(f"Sending email to {recipients}")
     try:
         app = current_app._get_current_object()
@@ -26,6 +26,7 @@ def send_async_email(self, subject, sender, recipients, body, pdf_paths=None):
         logging.error(f"Failed to send email: {e}")
 
 
+# TODO: Get async task for pdf processing running
 @celery_app.task(bind=True)
 def process_pdf_async(self, athlete_data, signature_img_path, template_path, output_file, x, y, width, height):
     temp_directory = '/tmp'  # Define your temp directory for PDFs
