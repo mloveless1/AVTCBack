@@ -54,9 +54,9 @@ class PullerResource(Resource):
 
                 gender = athlete.gender
                 if athlete.gender == 'male':
-                    gender = 'B'
+                    gender = 'M'
                 elif athlete.gender == 'female':
-                    gender = 'G'
+                    gender = 'F'
 
                 # Convert date_of_birth to mm/dd/yyyy format
                 date_of_birth_obj = datetime.strptime(str(athlete.date_of_birth), '%Y-%m-%d')
