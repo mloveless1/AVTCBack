@@ -15,7 +15,6 @@ from app.models import Athlete, Parent
 from app.tasks import send_async_email, process_pdf_async
 from app.utils.CalculateAge import calculate_age, calculate_age_in_year
 from app.utils.CalculateDivision import calculate_division
-from app.utils.ProcessPdf import ProcessPdf
 
 if os.path.exists('.env'):
     load_dotenv()
@@ -95,36 +94,33 @@ class SignupResource(Resource):
             return {'message': 'Error saving signature image', 'error': str(e)}, 500
         temp_directory = '/tmp'
         for athlete in athletes_data:
-
             athlete_age = calculate_age(athlete.date_of_birth)
             athlete_division = calculate_division(calculate_age_in_year(athlete.date_of_birth))
             form_data = self.get_athlete_form_data(athlete, new_parent, data, athlete_age, athlete_division)
 
             # Create names for output files
             code_of_conduct_output_file = f"code_of_conduct_{athlete.full_name}.pdf"
-            output_file = f"player_contract_{athlete.full_name}.pdf"
+            plyr_contract_output_file = f"player_contract_{athlete.full_name}.pdf"
 
-            # Process pdf objects
-            process_pdf = ProcessPdf(temp_directory, output_file)
-            process_conduct_pdf = ProcessPdf(temp_directory, code_of_conduct_output_file)
+            # Templates pdfs to fill
+            coc_template = 'app/pdfforms/CODE_OF_CONDUCT.pdf'
+            plyr_template = 'app/pdfforms/PLAYER_CONTRACT.pdf'
 
-            # Add data to pdf forms
-            process_conduct_pdf.add_data_to_pdf('app/pdfforms/CODE_OF_CONDUCT.pdf',
-                                                form_data['code_of_conduct_form_data'])
-            process_pdf.add_data_to_pdf('app/pdfforms/PLAYER_CONTRACT.pdf',
-                                        form_data['player_contract_form_data'])
+            # Code of conduct
+            process_pdf_async.delay(athlete_data=form_data['code_of_conduct_form_data'],
+                                    signature_img_path=signature_img_path,
+                                    template_path=coc_template, output_file=code_of_conduct_output_file,
+                                    x=250, y=45, width=80, height=35)
 
-            # Make paths to pdfs
-            path_to_conduct_pdf = os.path.join(temp_directory, code_of_conduct_output_file)
-            path_to_pdf = os.path.join(temp_directory, output_file)
-
-            # Add signature to pages - Update these x, y, width, height values as needed
-            process_pdf.embed_image_to_pdf(signature_img_path, path_to_pdf, x=80, y=171, width=80, height=35)
-            process_conduct_pdf.embed_image_to_pdf(signature_img_path, path_to_conduct_pdf, x=250, y=45, width=80,
-                                                   height=35)
+            # Player contract
+            process_pdf_async.delay(athlete_data=form_data['player_contract_form_data'],
+                                    signature_img_path=signature_img_path,
+                                    template_path=plyr_template, output_file=plyr_contract_output_file,
+                                    x=80, y=171, width=80, height=35)
 
             # Construct pdf link and append to pdf link list
-            pdf_path = os.path.join(temp_directory, output_file)
+            pdf_path = os.path.join(temp_directory, plyr_contract_output_file)
+            path_to_conduct_pdf = os.path.join(temp_directory, code_of_conduct_output_file)
             pdf_links.append(pdf_path)
             pdf_links.append(path_to_conduct_pdf)
 
@@ -136,11 +132,11 @@ class SignupResource(Resource):
 
         logging.info("Sending async email")
 
-        send_async_email(subject=subject,
-                         sender=sender,
-                         recipients=recipients,
-                         body=body,
-                         pdf_paths=pdf_links)
+        send_async_email.delay(subject=subject,
+                               sender=sender,
+                               recipients=recipients,
+                               body=body,
+                               pdf_paths=pdf_links)
         return {'message': 'Sign up successful'}, 201
 
     def get_athlete_form_data(self, athlete: Athlete, parent: Parent,

@@ -1,3 +1,4 @@
+import logging
 import os
 from .resources import initialize_routes
 from flask import Flask, jsonify, render_template
@@ -17,10 +18,12 @@ if os.path.exists('.env'):
 database_uri = os.getenv('DATABASE_URL')
 
 
+# TODO: HIDE SMTP CREDENTIALS ASAP in env vars
 # Function to create Flask app
 def create_app():
+    # noinspection PyShadowingNames
     app = Flask(__name__, template_folder='../templates')
-    app.config['BROKER_TRANSPORT'] = 'redis'
+    app.config['CELERY_BROKER_URL'] = os.getenv('REDIS_URL')
     app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
@@ -33,7 +36,7 @@ def create_app():
 
     CORS(app, resources={r"/*": {"origins": "*"}})
 
-    mail = Mail(app)
+    Mail(app)
     db.init_app(app)
     JWTManager(app)
     api = Api(app)
@@ -46,23 +49,29 @@ def create_app():
 app = create_app()
 
 
+# app.wsgi_app = ProfilerMiddleware(app.wsgi_app)
+
+
 # Initialize Celery
+# noinspection PyShadowingNames
 def make_celery(app):
-    broker_url = os.getenv('REDIS_URL')
+    broker_url = app.config['CELERY_BROKER_URL']
     print("Broker URL:", broker_url)  # Add this line for debugging
-    cel = Celery(app.import_name, broker=broker_url)
-    cel.conf.update(app.config)
+    cel = Celery(app.import_name, backend=broker_url, broker=broker_url)
 
     class ContextTask(cel.Task):
         def __call__(self, *args, **kwargs):
             with app.app_context():
                 return self.run(*args, **kwargs)
 
+    # noinspection PyPropertyAccess
     cel.Task = ContextTask
     return cel
 
 
-celery = make_celery(app)
+celery_app = make_celery(app)
+celery_app.conf.broker_url = os.getenv("REDIS_URL")
+app.logger.setLevel(logging.DEBUG)
 
 
 @app.route('/', methods=['GET', 'POST', 'PUT', 'DELETE'])
@@ -70,6 +79,7 @@ def index_page():
     return jsonify({"Message": "You don't belong here, please leave thanks"})
 
 
+# TODO: create flask-restful resources for these endpoints and move them to routes.py
 # Rest of your Flask app routes and functions
 @app.route('/signin', methods=['GET'])
 def login_page():
@@ -84,7 +94,7 @@ def fetch_csv():
 @app.after_request
 def after_request(response):
     header = response.headers
-    header['Access-Control-Allow-Origin'] = 'https://avtc-signup-front-aa5da244bd4a.herokuapp.com'
+    header['Access-Control-Allow-Origin'] = '*'
     header['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
     header['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE,OPTIONS'
     header['Access-Control-Allow-Credentials'] = 'true'
