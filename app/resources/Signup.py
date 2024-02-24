@@ -107,16 +107,16 @@ class SignupResource(Resource):
             plyr_template = 'app/pdfforms/PLAYER_CONTRACT.pdf'
 
             # Code of conduct
-            process_pdf_async(athlete_data=form_data['code_of_conduct_form_data'],
-                              signature_img_path=signature_img_path,
-                              template_path=coc_template, output_file=code_of_conduct_output_file,
-                              x=250, y=45, width=80, height=35)
+            process_pdf_async.delay(athlete_data=form_data['code_of_conduct_form_data'],
+                                    signature_img_path=signature_img_path,
+                                    template_path=coc_template, output_file=code_of_conduct_output_file,
+                                    x=250, y=45, width=80, height=35)
 
             # Player contract
-            process_pdf_async(athlete_data=form_data['player_contract_form_data'],
-                              signature_img_path=signature_img_path,
-                              template_path=plyr_template, output_file=plyr_contract_output_file,
-                              x=80, y=171, width=80, height=35)
+            process_pdf_async.delay(athlete_data=form_data['player_contract_form_data'],
+                                    signature_img_path=signature_img_path,
+                                    template_path=plyr_template, output_file=plyr_contract_output_file,
+                                    x=80, y=171, width=80, height=35)
 
             # Construct pdf link and append to pdf link list
             pdf_path = os.path.join(temp_directory, plyr_contract_output_file)
