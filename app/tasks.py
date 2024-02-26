@@ -31,7 +31,7 @@ def send_async_email(subject: str, sender: str, recipients: str, body: str, pdf_
 
 
 @celery.task
-def process_pdf_async(athlete_data, signature_img_path, template_path, output_file, x, y, width, height):
+def process_pdf_async(athlete_data, signature_img_data, template_path, output_file, x, y, width, height):
     temp_directory = '/tmp'  # heroku directory for files
     path_to_pdf = os.path.join(temp_directory, output_file)
     try:
@@ -43,7 +43,7 @@ def process_pdf_async(athlete_data, signature_img_path, template_path, output_fi
 
         # Embed the signature image into the PDF
         # Note: Adjust x, y, width, height
-        pdf_processor.embed_image_to_pdf(signature_img_path, path_to_pdf,
+        pdf_processor.embed_image_to_pdf(image_buffer=signature_img_data, pdf_path=path_to_pdf,
                                          x=x, y=y, width=width, height=height)
 
         logging.info(f"PDF processing complete for {athlete_data.get('PlayersName', 'Unknown')}")

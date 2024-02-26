@@ -1,4 +1,5 @@
 import os
+import io
 import pdfrw
 from PIL import Image
 
@@ -36,30 +37,37 @@ class ProcessPdf:
             return pdfrw.objects.pdfname.BasePdfName('/Yes') if value else pdfrw.objects.pdfname.BasePdfName('/Off')
         return ''
 
-    def embed_image_to_pdf(self, image_path, pdf_path, x, y, width, height, page_number=0):
+    def embed_image_to_pdf(self, image_buffer, pdf_path, x, y, width, height, page_number=0):
         """
-        Embeds an image into the PDF at the specified location.
-        x, y: Coordinates for the image's lower-left corner
-        width, height: Dimensions of the image
-        page_number: Page number to add the image to
+        Embeds an image into the PDF at the specified location, using an image buffer.
+        image_buffer: A bytes-like object containing the image data.
+        x, y: Coordinates for the image's lower-left corner.
+        width, height: Dimensions of the image.
+        page_number: Page number to add the image to.
         """
-        # Create a stamp PDF with the image
-        stamp = self.create_stamp_pdf(image_path, width, height)
+        # Create a stamp PDF with the image from buffer
+        stamp = self.create_stamp_pdf_from_buffer(image_buffer, width, height)
 
         # Merge the stamp with the form PDF
         self.merge_pdfs(stamp, pdf_path, page_number, x, y)
 
-    def create_stamp_pdf(self, image_path, width, height):
+    def create_stamp_pdf_from_buffer(self, image_buffer, width, height):
         """
-        Creates a stamp PDF with the image.
+        Creates a stamp PDF with the image from a buffer.
         """
-        # Load and resize the image
-        image = Image.open(image_path)
+        # Load and resize the image from a buffer
+        image = Image.open(io.BytesIO(image_buffer))
         image = image.resize((width, height))
 
-        # Save the image as a PDF
-        stamp_path = '/tmp/stamp.pdf'
-        image.save(stamp_path, 'PDF', resolution=100.0)
+        # Save the image as a PDF to a buffer
+        stamp_buffer = io.BytesIO()
+        image.save(stamp_buffer, 'PDF', resolution=100.0)
+        stamp_buffer.seek(0)  # Rewind the buffer to the beginning
+
+        # You need to save the buffer to a temporary file since pdfrw requires a file path
+        stamp_path = os.path.join(self.temp_directory, 'stamp.pdf')
+        with open(stamp_path, 'wb') as f:
+            f.write(stamp_buffer.read())
 
         return stamp_path
 
