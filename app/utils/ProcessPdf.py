@@ -12,7 +12,7 @@ class ProcessPdf:
 
     def add_data_to_pdf(self, template_path, data):
         template = pdfrw.PdfReader(template_path)
-        annotations = template.Root.Pages.Kids[0].Annots  # Assuming data to fill is on the first page
+        annotations = template.Root.Pages.Kids[0].Annots
 
         for annotation in annotations:
             if annotation['/Subtype'] == '/Widget' and annotation['/T']:

@@ -8,9 +8,11 @@ if os.path.exists('.env'):
     load_dotenv()
 
 database_uri = os.getenv('DATABASE_URL')
-
+if database_uri is None:
+    raise Exception("Database URI not defined")
 
 db = SQLAlchemy()
+
 # Configure the database connection (replace with your database URL)
 engine = create_engine(database_uri)
 

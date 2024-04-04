@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from celery import Celery
 
 # Import your resources
-from .database import db
+from .database import db, setup_database
 
 if os.path.exists('.env'):
     load_dotenv()
@@ -48,9 +48,8 @@ def create_app():
 # Initialize your Flask application
 app = create_app()
 
-
 # app.wsgi_app = ProfilerMiddleware(app.wsgi_app)
-
+setup_database()
 
 # Initialize Celery
 # noinspection PyShadowingNames

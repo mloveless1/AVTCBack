@@ -8,7 +8,9 @@ class Parent(Base):
     __tablename__ = "parents"
 
     parent_id = Column(Integer, primary_key=True, index=True)
-    parent_name = Column(String(255), index=True)
+    first_name = Column(String(255))
+    last_name = Column(String(255))
+    suffix = Column(String(55))
     email = Column(String(255), unique=True, index=True)
     phone_number = Column(String(255))
 
@@ -18,7 +20,7 @@ class Parent(Base):
     def to_dict(self):
         return {
             "parent_id": self.parent_id,
-            "parent_name": self.parent_name,
+            'full_name': " ".join([self.first_name, self.last_name]),
             "email": self.email,
             "phone_number": self.phone_number,
         }

@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.database import db
 from app.models import Athlete, Parent
+from app.utils.build_pdf_data import BuildPDFData
 from app.tasks import send_async_email, process_pdf_async
 from app.utils.CalculateAge import calculate_age, calculate_age_in_year
 from app.utils.CalculateDivision import calculate_division
@@ -27,15 +28,17 @@ engine = create_engine(database_uri)  # Update with your database URI
 
 
 # noinspection PyMethodMayBeStatic
+# TODO: Refactor for first name, last name, and suffix
 class SignupResource(Resource):
     def post(self):
         logging.info("Spinning up sign up")
         session = Session(bind=engine)
 
         data = request.get_json()
-
+        pf, pl = str(data['parentName']).split()
         new_parent = Parent(
-            parent_name=data['parentName'],
+            first_name=pf,
+            last_name=pl,
             email=data['email'],
             phone_number=data['phoneNumber']
         )
@@ -56,18 +59,28 @@ class SignupResource(Resource):
         signup_summary = "Signup Summary:\n"
 
         athletes_data = []
+        medical_conditions = []
+        physical_dates = []
         for athlete_data in data['athletes']:
+            af, al = str(athlete_data['athleteFullName']).split()
+            # Athlete object
             athlete_instance = Athlete(
                 parent_id=new_parent.parent_id,
-                full_name=athlete_data['athleteFullName'],
+                first_name=af,
+                last_name=al,
                 date_of_birth=datetime.strptime(athlete_data['dateOfBirth'], '%Y-%m-%d').date(),
                 gender=athlete_data['gender'],
                 returner_status=athlete_data['returner_status'],
             )
+
             athlete_age_in_year = calculate_age_in_year(athlete_instance.date_of_birth)
             athlete_division = calculate_division(athlete_age_in_year)
             athletes_data.append(athlete_instance)
-            signup_summary += f"Name: {athlete_instance.full_name}, Division: {athlete_division}\n"
+            medical_conditions.append(athlete_data['medicalConditions'])
+            physical_dates.append(athlete_data['lastPhysical'])
+            signup_summary += f"Name: {' '.join([af, al])}, Division: {athlete_division}\n"
+
+        # DB bulk save
         try:
             db.session.bulk_save_objects(athletes_data)
             db.session.commit()
@@ -76,44 +89,40 @@ class SignupResource(Resource):
             return {'message': 'Error creating athletes', 'error': str(e)}, 500
 
         pdf_links = []
-        signature_dir = '/tmp/signature_images'  # Update this path as needed
 
-        if not os.path.exists(signature_dir):
-            os.makedirs(signature_dir)
-
-        # Decode and save the parent signature image
+        # Decode signature img data
         signature_data = data['signature']
         signature_img = base64.b64decode(signature_data.split(',')[1])
-        signature_img_path = os.path.join(signature_dir, 'temp_signature.png')
 
-        try:
-            with open(signature_img_path, 'wb') as img_file:
-                img_file.write(signature_img)
-        except IOError as e:
-            logging.error(f"Couldn't write image: {e}", exc_info=True)
-            return {'message': 'Error saving signature image', 'error': str(e)}, 500
+        # temp directory in heroku do not change
         temp_directory = '/tmp'
-        for athlete in athletes_data:
+        for athlete, medical_condition, physical_date in athletes_data, medical_conditions, physical_dates:
+            athlete_full_name = ' '.join([athlete.first_name, athlete.last_name])
             athlete_age = calculate_age(athlete.date_of_birth)
             athlete_division = calculate_division(calculate_age_in_year(athlete.date_of_birth))
-            form_data = self.get_athlete_form_data(athlete, new_parent, data, athlete_age, athlete_division)
+            # form_data = self.get_athlete_form_data(athlete, new_parent, data, athlete_age, athlete_division)
+
+            data_processor = BuildPDFData(**data)
+            player_contract_data = data_processor.get_player_contract_form_data(athlete)
+            code_of_conduct_data = data_processor.get_code_of_conduct_form_data(athlete, medical_condition,
+                                                                                physical_date)
 
             # Create names for output files
-            code_of_conduct_output_file = f"code_of_conduct_{athlete.full_name}.pdf"
-            plyr_contract_output_file = f"player_contract_{athlete.full_name}.pdf"
+            code_of_conduct_output_file = f"code_of_conduct_{athlete_full_name}.pdf"
+            plyr_contract_output_file = f"player_contract_{athlete_full_name}.pdf"
 
             # Templates pdfs to fill
             coc_template = 'app/pdfforms/CODE_OF_CONDUCT.pdf'
             plyr_template = 'app/pdfforms/PLAYER_CONTRACT.pdf'
 
             # Code of conduct
-            process_pdf_async.delay(athlete_data=form_data['code_of_conduct_form_data'],
+            process_pdf_async.delay(athlete_data=code_of_conduct_data,
                                     signature_img_data=signature_img,
                                     template_path=coc_template, output_file=code_of_conduct_output_file,
                                     x=250, y=45, width=80, height=35)
 
             # Player contract
-            process_pdf_async.delay(athlete_data=form_data['player_contract_form_data'],
+            process_pdf_async.delay(athlete_data=player_contract_data,
                                     signature_img_data=signature_img,
                                     template_path=plyr_template, output_file=plyr_contract_output_file,
                                     x=80, y=171, width=80, height=35)
@@ -125,7 +134,8 @@ class SignupResource(Resource):
             pdf_links.append(path_to_conduct_pdf)
 
         # build email
-        subject = '{parent} signed up for AV Track Club'.format(parent=new_parent.parent_name)
+        subject = '{parent} signed up for AV Track Club'.format(
+            parent=''.join([new_parent.first_name, new_parent.last_name]))
         body = f'Contracts are attached below, not formatted for mobile devices.\n\n{signup_summary}'
         recipients = email_receivers
         sender = email_sender

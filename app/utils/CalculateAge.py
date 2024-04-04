@@ -1,5 +1,7 @@
 from datetime import date
 
+# TODO: Make this one function that returns a tuple that can be destructured
+
 
 def calculate_age(birth_date):
     today = date.today()
