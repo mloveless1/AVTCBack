@@ -1,16 +1,17 @@
 import logging
 import os
 from .resources import initialize_routes
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from flask_mail import Mail
 from dotenv import load_dotenv
 from celery import Celery
+from .database import db
+# Profiler uncomment when needed
+# from werkzeug.middleware.profiler import ProfilerMiddleware
 
-# Import your resources
-from .database import db, setup_database
 
 if os.path.exists('.env'):
     load_dotenv()
@@ -18,10 +19,11 @@ if os.path.exists('.env'):
 database_uri = os.getenv('DATABASE_URL')
 
 
-# TODO: HIDE SMTP CREDENTIALS ASAP in env vars
 # Function to create Flask app
 def create_app():
     # noinspection PyShadowingNames
+    # TODO: HIDE SMTP CREDENTIALS ASAP in env vars
+    # TODO: ABSTRACT CONFIGS INTO THEIR OWN MODULE
     app = Flask(__name__, template_folder='../templates')
     app.config['CELERY_BROKER_URL'] = os.getenv('REDIS_URL')
     app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
@@ -48,10 +50,10 @@ def create_app():
 # Initialize your Flask application
 app = create_app()
 
+# Uncomment Profiler when needed
 # app.wsgi_app = ProfilerMiddleware(app.wsgi_app)
-setup_database()
 
-# Initialize Celery
+# TODO: ABSTRACT CELERY INTO ITS OWN MODULE
 # noinspection PyShadowingNames
 def make_celery(app):
     broker_url = app.config['CELERY_BROKER_URL']
@@ -78,18 +80,6 @@ def index_page():
     return jsonify({"Message": "You don't belong here, please leave thanks"})
 
 
-# TODO: create flask-restful resources for these endpoints and move them to routes.py
-# Rest of your Flask app routes and functions
-@app.route('/signin', methods=['GET'])
-def login_page():
-    return render_template('login.html')
-
-
-@app.route('/fetch_csv', methods=['GET'])
-def fetch_csv():
-    return render_template('fetch_csv.html')
-
-
 @app.after_request
 def after_request(response):
     header = response.headers
@@ -98,7 +88,3 @@ def after_request(response):
     header['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE,OPTIONS'
     header['Access-Control-Allow-Credentials'] = 'true'
     return response
-
-
-if __name__ == '__main__':
-    app.run()

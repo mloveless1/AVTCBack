@@ -31,14 +31,14 @@ engine = create_engine(database_uri)  # Update with your database URI
 # TODO: Refactor for first name, last name, and suffix
 class SignupResource(Resource):
     def post(self):
-        logging.info("Spinning up sign up")
+        logging.info("Starting sign up process")
         session = Session(bind=engine)
 
         data = request.get_json()
-        pf, pl = str(data['parentName']).split()
+        # TODO: ADD suffix (for name) to parent model
         new_parent = Parent(
-            first_name=pf,
-            last_name=pl,
+            first_name=data['parentFirstName'],
+            last_name=data['parentLastName'],
             email=data['email'],
             phone_number=data['phoneNumber']
         )
@@ -61,24 +61,24 @@ class SignupResource(Resource):
         athletes_data = []
         medical_conditions = []
         physical_dates = []
+        # TODO: Update model to include suffix for name
         for athlete_data in data['athletes']:
-            af, al = str(athlete_data['athleteFullName']).split()
             # Athlete object
             athlete_instance = Athlete(
                 parent_id=new_parent.parent_id,
-                first_name=af,
-                last_name=al,
+                first_name=athlete_data['athleteFirstName'],
+                last_name=athlete_data['athleteLastName'],
                 date_of_birth=datetime.strptime(athlete_data['dateOfBirth'], '%Y-%m-%d').date(),
                 gender=athlete_data['gender'],
                 returner_status=athlete_data['returner_status'],
             )
-
+            athlete_full_name = ' '.join([athlete_instance.first_name, athlete_instance.last_name])
             athlete_age_in_year = calculate_age_in_year(athlete_instance.date_of_birth)
             athlete_division = calculate_division(athlete_age_in_year)
             athletes_data.append(athlete_instance)
             medical_conditions.append(athlete_data['medicalConditions'])
             physical_dates.append(athlete_data['lastPhysical'])
-            signup_summary += f"Name: {' '.join([af, al])}, Division: {athlete_division}\n"
+            signup_summary += f"Name: {athlete_full_name}, Division: {athlete_division}\n"
 
         # DB bulk save
         try:
@@ -96,16 +96,15 @@ class SignupResource(Resource):
 
         # temp directory in heroku do not change
         temp_directory = '/tmp'
-        for athlete, medical_condition, physical_date in athletes_data, medical_conditions, physical_dates:
+        for athlete in athletes_data:
+            parent_full_name = ' '.join([new_parent.first_name, new_parent.last_name])
             athlete_full_name = ' '.join([athlete.first_name, athlete.last_name])
             athlete_age = calculate_age(athlete.date_of_birth)
             athlete_division = calculate_division(calculate_age_in_year(athlete.date_of_birth))
-            # form_data = self.get_athlete_form_data(athlete, new_parent, data, athlete_age, athlete_division)
 
             data_processor = BuildPDFData(**data)
             player_contract_data = data_processor.get_player_contract_form_data(athlete)
-            code_of_conduct_data = data_processor.get_code_of_conduct_form_data(athlete, medical_condition,
-                                                                                physical_date)
+            code_of_conduct_data = data_processor.get_code_of_conduct_form_data(athlete)
 
             # Create names for output files
             code_of_conduct_output_file = f"code_of_conduct_{athlete_full_name}.pdf"
@@ -135,7 +134,7 @@ class SignupResource(Resource):
 
         # build email
         subject = '{parent} signed up for AV Track Club'.format(
-            parent=''.join([new_parent.first_name, new_parent.last_name]))
+            parent=' '.join([new_parent.first_name, new_parent.last_name]))
         body = f'Contracts are attached below, not formatted for mobile devices.\n\n{signup_summary}'
         recipients = email_receivers
         sender = email_sender
@@ -148,57 +147,3 @@ class SignupResource(Resource):
                                body=body,
                                pdf_paths=pdf_links)
         return {'message': 'Sign up successful'}, 201
-
-    def get_athlete_form_data(self, athlete: Athlete, parent: Parent,
-                              data: any, athlete_age: int, athlete_division: str,
-                              med_cond='', last_phy='') -> dict:
-        data_dict = {}
-        # Determine checkbox values based on gender
-        boy, girl = ('X', ' ') if athlete.gender == 'male' else (' ', 'X')
-
-        # TODO: Add division Divisions[0]
-        # Populate the PDF form data
-        player_contract_form_data = {
-            'KidSig': athlete.full_name,
-            'Year': '24',
-            'TeamName': 'Antelope Valley Track Club',
-            'TrackFieldBox': 'Yes',
-            'Boy': boy,
-            'Girl': girl,
-            'Age': str(athlete_age),
-            'Division': athlete_division,
-            'PlayersName': athlete.full_name,
-            'Date of Birth': athlete.date_of_birth.strftime('%m/%d/%Y'),
-            'Age_2': str(athlete_age),
-            # Assuming 'Date_Signed' is the current date
-            'DateSigned': datetime.now().strftime('%m/%d/%Y'),
-            'PlayersAddress': str(data['streetAddress']),  # Replace with actual parent address field
-            'CityZip': str(data['city'] + "  " + data['zipcode']),
-            'Phone': parent.phone_number,
-            'Email': parent.email,
-            'Cell PhoneEmergency': data['emergencyPhone'],
-            'Contact': data['emergencyName'],
-            'Carrier': data['carrier'],
-            'Policy Number': data['policyNumber'],
-            # Stupid lazy "hack" to align the text on the form correctly
-            'PlayerName2':
-                ("                                        " + athlete.full_name),
-            'Name_Parent_or_Guardian_print[0]': "                    " + parent.parent_name,
-            'Date Signed': datetime.now().strftime('%m/%d/%Y'),
-            'NameOfParent': parent.parent_name,
-        }
-        data_dict['player_contract_form_data'] = player_contract_form_data
-
-        code_of_conduct_form_data = {
-            'PLAYER': athlete.full_name,
-            'CLUB': 'Antelope Valley Track Club',
-            'My Child 1': athlete.full_name,
-            'My Child 2': med_cond,
-            'DATED': last_phy,
-            'Player Name Please Print': athlete.full_name,
-            'Parents Name Please Print': parent.parent_name,
-            'CoachClub Officials Name Please Print': 'Tameisha Warner',
-        }
-        data_dict['code_of_conduct_form_data'] = code_of_conduct_form_data
-
-        return data_dict

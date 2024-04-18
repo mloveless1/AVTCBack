@@ -17,6 +17,7 @@ class BuildPDFData:
         return self._athletes_data
 
     def get_player_contract_form_data(self, athlete: Athlete) -> dict:
+        parent_full_name = ' '.join([self.parent_info['parentFirstName'], self.parent_info['parentLastName']])
         athlete_full_name = ' '.join([athlete.first_name, athlete.last_name])
         athlete_age = calculate_age(athlete.date_of_birth)
         athlete_age_in_year = calculate_age_in_year(athlete.date_of_birth)
@@ -33,7 +34,7 @@ class BuildPDFData:
             'Division': athlete_division,
             'PlayersName': athlete_full_name,
             'Date of Birth': athlete.date_of_birth.strftime('%m/%d/%Y'),
-            'Age_2': athlete,
+            'Age_2': athlete_age,
             'DateSigned': datetime.now().strftime('%m/%d/%Y'),
             'PlayersAddress': self.parent_info['streetAddress'],
             'CityZip': f"{self.parent_info['city']}  {self.parent_info['zipcode']}",
@@ -44,14 +45,15 @@ class BuildPDFData:
             'Carrier': self.parent_info['carrier'],
             'Policy Number': self.parent_info['policyNumber'],
             'PlayerName2': " " * 40 + ' '.join([athlete.first_name, athlete.last_name]),
-            'Name_Parent_or_Guardian_print[0]': " " * 20 + self.parent_info['parentName'],
-            'NameOfParent': self.parent_info['parentName'],
+            'Name_Parent_or_Guardian_print[0]': " " * 20 + parent_full_name,
+            'NameOfParent': parent_full_name,
         }
 
     def get_code_of_conduct_form_data(self, athlete: Athlete,
                                       medical_conditions: str = '',
                                       last_physical: str = '') -> dict:
         # Similar to get_player_contract_form_data, but for the code of conduct form
+        parent_full_name = ' '.join([self.parent_info['parentFirstName'], self.parent_info['parentLastName']])
         athlete_full_name = ' '.join([athlete.first_name, athlete.last_name])
         return {
             'PLAYER': athlete_full_name,
@@ -60,6 +62,6 @@ class BuildPDFData:
             'My Child 2': medical_conditions,  # TODO: Rename this field on the pdf, it's the medical conditions field
             'DATED': last_physical,
             'Player Name Please Print': athlete_full_name,
-            'Parents Name Please Print': self.parent_info['parentName'],
+            'Parents Name Please Print': parent_full_name,
             'CoachClub Officials Name Please Print': 'Tameisha Warner',
         }
