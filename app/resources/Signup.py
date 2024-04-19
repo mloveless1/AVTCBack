@@ -93,9 +93,9 @@ class SignupResource(Resource):
         temp_directory = '/tmp'
         for athlete in athletes_data:
             parent_full_name = ' '.join([new_parent.first_name, new_parent.last_name,
-                                         new_parent.suffix if new_parent.suffix is not None else ''])
+                                         new_parent.suffix if new_parent.suffix is not None else '','_'])
             athlete_full_name = ' '.join([athlete.first_name, athlete.last_name,
-                                          athlete.suffix if athlete.suffix is not None else ''])
+                                          athlete.suffix if athlete.suffix is not None else '','_'])
             athlete_age = calculate_age(athlete.date_of_birth)
             athlete_division = calculate_division(calculate_age_in_year(athlete.date_of_birth))
 
