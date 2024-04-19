@@ -4,13 +4,13 @@ import os
 from datetime import datetime
 
 from dotenv import load_dotenv
-from flask import request
+from flask import request, current_app
 from flask_restful import Resource
 from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from app.database import db
+from app.database import db, get_session
 from app.models import Athlete, Parent
 from app.utils.build_pdf_data import BuildPDFData
 from app.tasks import send_async_email, process_pdf_async
@@ -20,30 +20,29 @@ from app.utils.CalculateDivision import calculate_division
 if os.path.exists('.env'):
     load_dotenv()
 
-database_uri = os.getenv('DATABASE_URL')
+# Refactor to pull from Config
+database_uri = os.environ.get('DATABASE_URL')
 email_sender = os.getenv('NOTIFICATION_EMAIL_SENDER')
 email_receivers = os.getenv('NOTIFICATION_EMAIL_RECEIVERS').split(';')
 
-engine = create_engine(database_uri)  # Update with your database URI
-
-
+engine = create_engine(database_uri)
 # noinspection PyMethodMayBeStatic
-# TODO: Refactor for first name, last name, and suffix
 class SignupResource(Resource):
     def post(self):
         logging.info("Starting sign up process")
         session = Session(bind=engine)
 
         data = request.get_json()
-        # TODO: ADD suffix (for name) to parent model
-        new_parent = Parent(
+
+        new_parent: Parent = Parent(
             first_name=data['parentFirstName'],
             last_name=data['parentLastName'],
+            suffix=data['suffixName'],
             email=data['email'],
             phone_number=data['phoneNumber']
         )
 
-        existing_parent = session.query(Parent).filter(Parent.email == data['email']).first()
+        existing_parent: Parent = session.query(Parent).filter(Parent.email == data['email']).first()
         if existing_parent:
             return {'message': 'A user with this email already exists'}, 409
         # Create new parent
@@ -59,15 +58,13 @@ class SignupResource(Resource):
         signup_summary = "Signup Summary:\n"
 
         athletes_data = []
-        medical_conditions = []
-        physical_dates = []
-        # TODO: Update model to include suffix for name
         for athlete_data in data['athletes']:
             # Athlete object
-            athlete_instance = Athlete(
+            athlete_instance: Athlete = Athlete(
                 parent_id=new_parent.parent_id,
                 first_name=athlete_data['athleteFirstName'],
                 last_name=athlete_data['athleteLastName'],
+                suffix=athlete_data['suffixName'],
                 date_of_birth=datetime.strptime(athlete_data['dateOfBirth'], '%Y-%m-%d').date(),
                 gender=athlete_data['gender'],
                 returner_status=athlete_data['returner_status'],
@@ -76,8 +73,6 @@ class SignupResource(Resource):
             athlete_age_in_year = calculate_age_in_year(athlete_instance.date_of_birth)
             athlete_division = calculate_division(athlete_age_in_year)
             athletes_data.append(athlete_instance)
-            medical_conditions.append(athlete_data['medicalConditions'])
-            physical_dates.append(athlete_data['lastPhysical'])
             signup_summary += f"Name: {athlete_full_name}, Division: {athlete_division}\n"
 
         # DB bulk save
@@ -91,14 +86,16 @@ class SignupResource(Resource):
         pdf_links = []
 
         # Decode signature img data
-        signature_data = data['signature']
-        signature_img = base64.b64decode(signature_data.split(',')[1])
+        signature_data: base64 = data['signature']
+        signature_img: bytes = base64.b64decode(signature_data.split(',')[1])
 
         # temp directory in heroku do not change
         temp_directory = '/tmp'
         for athlete in athletes_data:
-            parent_full_name = ' '.join([new_parent.first_name, new_parent.last_name])
-            athlete_full_name = ' '.join([athlete.first_name, athlete.last_name])
+            parent_full_name = ' '.join([new_parent.first_name, new_parent.last_name,
+                                         new_parent.suffix if new_parent.suffix is not None else ''])
+            athlete_full_name = ' '.join([athlete.first_name, athlete.last_name,
+                                          athlete.suffix if athlete.suffix is not None else ''])
             athlete_age = calculate_age(athlete.date_of_birth)
             athlete_division = calculate_division(calculate_age_in_year(athlete.date_of_birth))
 

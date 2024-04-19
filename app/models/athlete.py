@@ -1,14 +1,15 @@
 from sqlalchemy import Column, Integer, String, Date, ForeignKey
 from sqlalchemy.orm import relationship
-from app.database import Base
+from app.database import db
 
 
-class Athlete(Base):
+class Athlete(db.Model):
     __tablename__ = "athletes"
 
     athlete_id = Column(Integer, primary_key=True, index=True)
     first_name = Column(String(255))
     last_name = Column(String(255))
+    suffix = Column(String(50))
     date_of_birth = Column(Date)
     gender = Column(String(255))
     returner_status = Column(String(255))

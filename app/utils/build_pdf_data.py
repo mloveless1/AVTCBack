@@ -19,7 +19,7 @@ class BuildPDFData:
     def get_player_contract_form_data(self, athlete: Athlete) -> dict:
         parent_full_name = ' '.join([self.parent_info['parentFirstName'], self.parent_info['parentLastName']])
         athlete_full_name = ' '.join([athlete.first_name, athlete.last_name])
-        athlete_age = calculate_age(athlete.date_of_birth)
+        athlete_age = str(calculate_age(athlete.date_of_birth))
         athlete_age_in_year = calculate_age_in_year(athlete.date_of_birth)
         athlete_division = calculate_division(athlete_age_in_year)
 
@@ -50,8 +50,8 @@ class BuildPDFData:
         }
 
     def get_code_of_conduct_form_data(self, athlete: Athlete,
-                                      medical_conditions: str = '',
-                                      last_physical: str = '') -> dict:
+                                      medical_conditions='',
+                                      last_physical='') -> dict:
         # Similar to get_player_contract_form_data, but for the code of conduct form
         parent_full_name = ' '.join([self.parent_info['parentFirstName'], self.parent_info['parentLastName']])
         athlete_full_name = ' '.join([athlete.first_name, athlete.last_name])

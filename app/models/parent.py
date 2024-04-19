@@ -1,10 +1,10 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-from app.database import Base
+from app.database import db
 from .athlete import Athlete
 
 
-class Parent(Base):
+class Parent(db.Model):
     __tablename__ = "parents"
 
     parent_id = Column(Integer, primary_key=True, index=True)
