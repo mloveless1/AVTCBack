@@ -1,62 +1,67 @@
 import logging
 import os
+
+from flask_sqlalchemy import SQLAlchemy
+
+from .config import Config
+from .database import create_tables
+from .database.engine import init_engine
+from .models import *
 from .resources import initialize_routes
-from flask import Flask, jsonify, render_template
+from flask import Flask
+from flask_migrate import Migrate
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from flask_mail import Mail
 from dotenv import load_dotenv
 from celery import Celery
-
-# Import your resources
 from .database import db
+
+# Profiler uncomment when needed
+# from werkzeug.middleware.profiler import ProfilerMiddleware
+
 
 if os.path.exists('.env'):
     load_dotenv()
 
-database_uri = os.getenv('DATABASE_URL')
 
-
-# TODO: HIDE SMTP CREDENTIALS ASAP in env vars
 # Function to create Flask app
 def create_app():
     # noinspection PyShadowingNames
     app = Flask(__name__, template_folder='../templates')
-    app.config['CELERY_BROKER_URL'] = os.getenv('REDIS_URL')
-    app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
-    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-    app.config['MAIL_PORT'] = 587
-    app.config['MAIL_USE_TLS'] = True
-    app.config['MAIL_USE_SSL'] = False
-    app.config['MAIL_USERNAME'] = 'malcolmloveless@gmail.com'
-    app.config['MAIL_PASSWORD'] = 'jcch wzuz wblr bhtl'
 
-    CORS(app, resources={r"/*": {"origins": "*"}})
+    app.config.from_object(Config)
 
     Mail(app)
+
     db.init_app(app)
+    Migrate(app, db)
+
     JWTManager(app)
+
     api = Api(app)
     initialize_routes(api)
+
+    with app.app_context():
+        init_engine()
 
     return app
 
 
-# Initialize your Flask application
+# Initialize Flask application
 app = create_app()
+# create_tables(app)
 
-
+# Uncomment Profiler when needed
 # app.wsgi_app = ProfilerMiddleware(app.wsgi_app)
 
 
-# Initialize Celery
+# TODO: ABSTRACT CELERY INTO ITS OWN MODULE WITHOUT BREAKING CELERY... AGAIN..
 # noinspection PyShadowingNames
 def make_celery(app):
-    broker_url = app.config['CELERY_BROKER_URL']
-    print("Broker URL:", broker_url)  # Add this line for debugging
+    broker_url = os.getenv('REDIS_URL')
+
     cel = Celery(app.import_name, backend=broker_url, broker=broker_url)
 
     class ContextTask(cel.Task):
@@ -74,23 +79,6 @@ celery_app.conf.broker_url = os.getenv("REDIS_URL")
 app.logger.setLevel(logging.DEBUG)
 
 
-@app.route('/', methods=['GET', 'POST', 'PUT', 'DELETE'])
-def index_page():
-    return jsonify({"Message": "You don't belong here, please leave thanks"})
-
-
-# TODO: create flask-restful resources for these endpoints and move them to routes.py
-# Rest of your Flask app routes and functions
-@app.route('/signin', methods=['GET'])
-def login_page():
-    return render_template('login.html')
-
-
-@app.route('/fetch_csv', methods=['GET'])
-def fetch_csv():
-    return render_template('fetch_csv.html')
-
-
 @app.after_request
 def after_request(response):
     header = response.headers
@@ -99,7 +87,3 @@ def after_request(response):
     header['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE,OPTIONS'
     header['Access-Control-Allow-Credentials'] = 'true'
     return response
-
-
-if __name__ == '__main__':
-    app.run()

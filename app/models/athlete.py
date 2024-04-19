@@ -1,13 +1,15 @@
 from sqlalchemy import Column, Integer, String, Date, ForeignKey
 from sqlalchemy.orm import relationship
-from app.database import Base
+from app.database import db
 
 
-class Athlete(Base):
+class Athlete(db.Model):
     __tablename__ = "athletes"
 
     athlete_id = Column(Integer, primary_key=True, index=True)
-    full_name = Column(String(255), index=True)
+    first_name = Column(String(255))
+    last_name = Column(String(255))
+    suffix = Column(String(50))
     date_of_birth = Column(Date)
     gender = Column(String(255))
     returner_status = Column(String(255))
@@ -19,7 +21,7 @@ class Athlete(Base):
     def to_dict(self):
         return {
             'athlete_id': self.athlete_id,
-            'full_name': self.full_name,
+            'full_name': " ".join([self.first_name, self.last_name]),
             'date_of_birth': self.date_of_birth.isoformat() if self.date_of_birth else None,
             'gender': self.gender,
             'returner_status': self.returner_status,

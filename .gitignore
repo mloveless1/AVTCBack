@@ -8,3 +8,5 @@ app/pdfforms/signature_images
 # pycache and .pyc
 __pycache__/
 *.pyc
+
+venv/
