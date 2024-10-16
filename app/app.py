@@ -21,27 +21,23 @@ from .database import db
 # Profiler uncomment when needed
 # from werkzeug.middleware.profiler import ProfilerMiddleware
 
-
-if os.path.exists('.env'):
-    load_dotenv()
+mail = Mail()
+migrate = Migrate()
+JWTManager = JWTManager()
 
 
 # Function to create Flask app
 def create_app():
     # noinspection PyShadowingNames
     app = Flask(__name__, template_folder='../templates')
-
     app.config.from_object(Config)
-
-    Mail(app)
-
-    db.init_app(app)
-    Migrate(app, db)
-
-    JWTManager(app)
 
     api = Api(app)
     initialize_routes(api)
+    mail.init_app(app)
+    db.init_app(app)
+    migrate.init_app(app, db)
+    JWTManager.init_app(app)
 
     with app.app_context():
         init_engine()

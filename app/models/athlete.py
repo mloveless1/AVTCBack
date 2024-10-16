@@ -14,6 +14,7 @@ class Athlete(db.Model):
     gender = Column(String(255))
     returner_status = Column(String(255))
     parent_id = Column(Integer, ForeignKey('parents.parent_id'))
+    medical_conditions = Column(String(255))
 
     # Relationship to Parent model
     parent = relationship("Parent", back_populates="athletes")
@@ -26,4 +27,5 @@ class Athlete(db.Model):
             'gender': self.gender,
             'returner_status': self.returner_status,
             'parent_id': self.parent_id,
+            'medical_conditions': self.medical_conditions,
         }
