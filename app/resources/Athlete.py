@@ -39,6 +39,7 @@ class AthleteResource(Resource):
             gender=args['gender'],
             returner_status=args['returner_status'],
             parent_id=parent.parent_id,
+            medical_conditions=args['medical_conditions']
         )
         db.session.add(new_athlete)
         try:

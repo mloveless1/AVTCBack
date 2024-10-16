@@ -13,6 +13,3 @@ def create_tables(app):
         # This will create all tables that do not already exist
         db.create_all()
 
-
-if __name__ == "__main__":
-    setup_database()

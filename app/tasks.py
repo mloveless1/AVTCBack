@@ -31,7 +31,11 @@ def send_async_email(subject: str, sender: str, recipients: str, body: str, pdf_
 
 
 @celery.task
-def process_pdf_async(athlete_data, signature_img_data, template_path, output_file, x, y, width, height):
+def process_pdf_async(athlete_data: dict,
+                      parent_signature_img_data: bytes,
+                      athlete_signature_img_data: bytes,
+                      template_path: str, output_file: str,
+                      x: int, y: int, width: int, height: int) -> None:
     temp_directory = '/tmp'  # heroku directory for files
     path_to_pdf = os.path.join(temp_directory, output_file)
 
@@ -47,7 +51,10 @@ def process_pdf_async(athlete_data, signature_img_data, template_path, output_fi
     try:
         # Embed the signature image into the PDF
         # Note: Adjust x, y, width, height
-        pdf_processor.embed_image_to_pdf(image_buffer=signature_img_data, pdf_path=path_to_pdf,
+        pdf_processor.embed_image_to_pdf(image_buffer=parent_signature_img_data, pdf_path=path_to_pdf,
+                                         x=x, y=y, width=width, height=height)
+        # TODO HARDCODE SIGNATURE COORDS FOR ATHLETE SIGNATURES.. PASS IN A FLAG TO DETERMINE COORDS
+        pdf_processor.embed_image_to_pdf(image_buffer=athlete_signature_img_data, pdf_path=path_to_pdf,
                                          x=x, y=y, width=width, height=height)
 
         logging.info(f"Added image to {athlete_data.get('PlayersName', 'Unknown')}")

@@ -2,6 +2,7 @@ from flask_mail import Message
 from flask import current_app
 import os
 
+
 class EmailNotification:
     def __init__(self):
         # Assuming Mail has been initialized with the app and attached to current_app

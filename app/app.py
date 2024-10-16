@@ -21,10 +21,6 @@ from .database import db
 # Profiler uncomment when needed
 # from werkzeug.middleware.profiler import ProfilerMiddleware
 
-
-if os.path.exists('.env'):
-    load_dotenv()
-
 mail = Mail()
 migrate = Migrate()
 JWTManager = JWTManager()
