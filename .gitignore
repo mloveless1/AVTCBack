@@ -5,6 +5,8 @@ app/pdfforms/signature_images
 # Local env variables
 .env
 
+app/tmp
+
 # pycache and .pyc
 __pycache__/
 *.pyc
