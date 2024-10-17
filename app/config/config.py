@@ -7,15 +7,17 @@ class Config:
     DEBUG = False
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(days=1)
-    MAIL_SERVER = os.getenv('MAIL_SERVER')
-    MAIL_PORT = os.getenv('MAIL_PORT')
+
+    # Mailer-To-Go SMTP configuration
+    MAIL_SERVER = os.getenv('MAILERTOGO_SMTP_HOST', 'smtp.us-west-1.mailertogo.net')
+    MAIL_PORT = int(os.getenv('MAILERTOGO_SMTP_PORT', 587))
     MAIL_USE_TLS = True
     MAIL_USE_SSL = False
-    MAIL_USERNAME = os.getenv('MAIL_USERNAME')
-    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
+    MAIL_USERNAME = os.getenv('MAILERTOGO_SMTP_USER')
+    MAIL_PASSWORD = os.getenv('MAILERTOGO_SMTP_PASSWORD')
+
     NOTIFICATION_EMAIL_RECEIVERS = os.getenv('NOTIFICATION_EMAIL_RECEIVERS')
-    NOTIFICATION_EMAIL_SENDER = os.getenv('NOTIFICATION_EMAIL_SENDER')
+    NOTIFICATION_EMAIL_SENDER = MAIL_USERNAME  # Use the Mailer-To-Go user as sender
+
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
     SQL_ALCHEMY_TRACK_MODIFICATIONS = True
-
-
