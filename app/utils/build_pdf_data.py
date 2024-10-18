@@ -23,8 +23,8 @@ class BuildPDFData:
         athlete_division = calculate_division(athlete_age_in_year)
 
         return {
-            'KidSig': athlete_full_name,
-            'Year': '24',  # TODO: Make this dynamic and not hardcoded
+            'KidSig': ' ',
+            'Year': '25',  # TODO: Make this dynamic and not hardcoded
             'TeamName': 'Antelope Valley Track Club',
             'TrackFieldBox': 'Yes',
             'Boy': 'X' if athlete_data['gender'] == 'male' else ' ',
