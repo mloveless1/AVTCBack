@@ -51,11 +51,23 @@ def process_pdf_async(athlete_data: dict,
     try:
         # Embed the signature image into the PDF
         # Note: Adjust x, y, width, height
-        pdf_processor.embed_image_to_pdf(image_buffer=parent_signature_img_data, pdf_path=path_to_pdf,
-                                         x=x, y=y, width=width, height=height)
-        # TODO HARDCODE SIGNATURE COORDS FOR ATHLETE SIGNATURES.. PASS IN A FLAG TO DETERMINE COORDS
-        pdf_processor.embed_image_to_pdf(image_buffer=athlete_signature_img_data, pdf_path=path_to_pdf,
-                                         x=x, y=y, width=width, height=height)
+        pdf_processor.embed_image_to_pdf(
+            image_buffer=parent_signature_img_data,
+            pdf_path=path_to_pdf,
+            x=x, y=y, width=width, height=height)
+
+        if 'code_of_conduct_' in output_file:
+            pdf_processor.embed_image_to_pdf(
+                image_buffer=athlete_signature_img_data,
+                pdf_path=path_to_pdf,
+                x=250, y=90, width=80, height=35
+            )
+        elif 'player_contract_' in output_file:
+            pdf_processor.embed_image_to_pdf(
+                image_buffer=athlete_signature_img_data,
+                pdf_path=path_to_pdf,
+                x=80, y=216, width=80, height=35
+            )
 
         logging.info(f"Added image to {athlete_data.get('PlayersName', 'Unknown')}")
     except Exception as e:
