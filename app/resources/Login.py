@@ -21,7 +21,7 @@ class LoginResource(Resource):
 
         # Fetch the stored username and hashed password
         stored_username = os.getenv('USERNAME_TOKEN')
-        stored_password_hash = os.getenv('PASSWORD')
+        stored_password_hash = os.getenv('USER_PASS')
 
         # Verify username and password
         if stored_username == user and checkpw(user_pass.encode(), stored_password_hash.encode()):
