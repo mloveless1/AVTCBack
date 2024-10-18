@@ -78,7 +78,7 @@ class SignupResource(Resource):
     def _process_athletes_and_generate_pdfs(self, data, parent):
         """Generate PDFs for athletes and build a signup summary."""
         pdf_links = []
-        parent_full_name = ' '.join([data['parentFirstName'], data['parentLastName']], ' ')
+        parent_full_name = ' '.join([data['parentFirstName'], data['parentLastName']])
         signup_summary = (f'Signup Summary:\n\n '
                           f'Parent: {parent_full_name}\n')
 
