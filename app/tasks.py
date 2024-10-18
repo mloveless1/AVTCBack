@@ -60,13 +60,13 @@ def process_pdf_async(athlete_data: dict,
             pdf_processor.embed_image_to_pdf(
                 image_buffer=athlete_signature_img_data,
                 pdf_path=path_to_pdf,
-                x=200, y=45, width=80, height=35
+                x=400, y=45, width=80, height=35
             )
         elif 'player_contract_' in output_file:
             pdf_processor.embed_image_to_pdf(
                 image_buffer=athlete_signature_img_data,
                 pdf_path=path_to_pdf,
-                x=416, y=316, width=80, height=35
+                x=416, y=516, width=80, height=35
             )
 
         logging.info(f"Added image to {athlete_data.get('PlayersName', 'Unknown')}")
