@@ -41,6 +41,7 @@ class SignupResource(Resource):
         # Save new parent to DB
         try:
             db.session.add(new_parent)
+            db.session.flush()
         except SQLAlchemyError as e:
             db.session.rollback()
             logging.error(f"Failed to create parent: {e}", exc_info=True)
