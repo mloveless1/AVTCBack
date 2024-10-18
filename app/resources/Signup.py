@@ -77,7 +77,9 @@ class SignupResource(Resource):
     def _process_athletes_and_generate_pdfs(self, data, parent):
         """Generate PDFs for athletes and build a signup summary."""
         pdf_links = []
-        signup_summary = "Signup Summary:\n"
+        parent_full_name = ' '.join([data['parentFirstName'], data['parentLastName']], ' ')
+        signup_summary = (f'Signup Summary:\n\n '
+                          f'Parent: {parent_full_name}\n')
 
         parent_signature_data: base64 = data['parent_signature']
         parent_signature_img: bytes = base64.b64decode(parent_signature_data.split(',')[1])
@@ -97,7 +99,7 @@ class SignupResource(Resource):
             athlete_division = calculate_division(athlete_age_in_year)
 
             # Add to signup summary
-            signup_summary += f"Name: {athlete_full_name}, Division: {athlete_division}\n"
+            signup_summary += f"Athlete name: {athlete_full_name}, Division: {athlete_division}\n"
 
             athlete_signature_data: base64 = athlete['athlete_signature']
             athlete_signature_img: bytes = base64.b64decode(athlete_signature_data.split(',')[1])
@@ -161,7 +163,7 @@ class SignupResource(Resource):
 
     def _send_confirmation_email(self, parent, signup_summary, pdf_links, sender, recipients):
         """Send a confirmation email with the generated PDFs."""
-        subject = f"{parent.first_name} {parent.last_name} signed up for AV Track Club"
+        subject = f"Successful sign up for AV Track Club"
         body = f"Contracts are attached below, not formatted for mobile devices.\n\n{signup_summary}"
 
         logging.info("Sending async email")
@@ -174,4 +176,5 @@ class SignupResource(Resource):
         )
 
     def sign_contracts():
+        # TODO MOVE CONTRACT LOGIC TO HERE
         pass

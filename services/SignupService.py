@@ -17,6 +17,8 @@ from app.tasks import send_async_email, process_pdf_async
 from app.utils.CalculateAge import calculate_age_in_year
 from app.utils.CalculateDivision import calculate_division
 
+# TODO REFACTOR AND INTEGRATE INTO SIGNUP ENDPOINT
+
 
 class SignupService:
     def __init__(self):
