@@ -9,8 +9,7 @@ def calculate_age(birth_date):
     return age
 
 
-def calculate_age_in_year(birth_date):
-    today = date.today()
-    age = today.year - birth_date.year
+def calculate_age_in_year(birth_date, season_year):
+    age = season_year - birth_date.year
 
     return age
