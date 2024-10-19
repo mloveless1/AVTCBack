@@ -3,6 +3,7 @@ from datetime import timedelta
 
 
 class Config:
+    # Celery and JWT Configs
     CELERY_BROKER_URL = os.getenv('REDIS_URL')
     DEBUG = False
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY')
@@ -16,8 +17,13 @@ class Config:
     MAIL_USERNAME = os.getenv('MAILERTOGO_SMTP_USER')
     MAIL_PASSWORD = os.getenv('MAILERTOGO_SMTP_PASSWORD')
 
+    # More Email configs
     NOTIFICATION_EMAIL_RECEIVERS = os.getenv('NOTIFICATION_EMAIL_RECEIVERS')
-    NOTIFICATION_EMAIL_SENDER = f'{MAIL_USERNAME}@{MAIL_SERVER}'  # Use the Mailer-To-Go user as sender
+    NOTIFICATION_EMAIL_SENDER = f'{MAIL_USERNAME}@{MAIL_SERVER}'
 
+    # SQLAlchemy configs
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL')
     SQL_ALCHEMY_TRACK_MODIFICATIONS = True
+
+    # Year the season will be in
+    SEASON_YEAR = os.getenv('SEASON_YEAR')

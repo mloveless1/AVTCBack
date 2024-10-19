@@ -95,8 +95,9 @@ class SignupResource(Resource):
                 athlete.get('suffixName', '')
             ]).strip()
 
-            athlete_age = calculate_age(datetime.strptime(athlete['dateOfBirth'], '%Y-%m-%d').date())
-            athlete_age_in_year = calculate_age_in_year(datetime.strptime(athlete['dateOfBirth'], '%Y-%m-%d').date())
+            athlete_birth_date = datetime.strptime(athlete['dateOfBirth'], '%Y-%m-%d').date()
+            athlete_age = calculate_age(athlete_birth_date)
+            athlete_age_in_year = calculate_age_in_year(athlete_birth_date, int(app.config['SEASON_YEAR']))
             athlete_division = calculate_division(athlete_age_in_year)
 
             # Add to signup summary
