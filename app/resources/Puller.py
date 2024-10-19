@@ -1,6 +1,8 @@
 import os
 import io
 import csv
+import logging
+
 from datetime import datetime
 from flask import Response
 from flask_restful import Resource
@@ -13,8 +15,6 @@ from dotenv import load_dotenv
 if os.path.exists('.env'):
     load_dotenv()
 
-
-# noinspection PyMethodMayBeStatic
 class PullerResource(Resource):
 
     @jwt_required()
@@ -22,17 +22,22 @@ class PullerResource(Resource):
         # Load database URI from environment variable
         database_uri = os.getenv('DATABASE_URL')
 
-        # Create a database engine
+        # Create a database engine and session
         engine = create_engine(database_uri)
-
-        # Create a session
         session = Session(bind=engine)
 
         try:
-            # Perform a JOIN query between Athletes and Parents
-            # noinspection PyTypeChecker
-            query = session.query(Athlete, Parent).join(Parent, Athlete.parent_id == Parent.parent_id)
-            results = query.all()
+            # Use outerjoin to handle cases with null parent_ids
+            query = (
+                session.query(Athlete, Parent)
+                .outerjoin(Parent, Athlete.parent_id == Parent.parent_id)
+            )
+
+            try:
+                results = query.all()
+            except Exception as e:
+                logging.exception("Error performing join query")
+                return {'error': 'Database query failed'}, 500
 
             # Create a CSV in memory
             output = io.StringIO()
@@ -42,37 +47,37 @@ class PullerResource(Resource):
             team_name = "ANTELOPE VALLEY TRACK CLUB"
 
             for athlete, parent in results:
-
-                athlete_name_tokens = athlete.full_name.split()
-                first_name, last_name= str(athlete_name_tokens[0]).capitalize().strip(), str(athlete_name_tokens[1])
+                athlete_name_tokens = athlete.to_dict().get('full_name', '').split()
+                first_name = athlete_name_tokens[0].capitalize().strip() if athlete_name_tokens else ''
+                last_name = athlete_name_tokens[1] if len(athlete_name_tokens) > 1 else ''
 
                 suffix = ''
                 if len(athlete_name_tokens) == 3:
-                    suffix = ' ' + str(athlete_name_tokens[2])
+                    suffix = ' ' + athlete_name_tokens[2]
 
                 last_name = (last_name + suffix).title().strip()
 
-                gender = athlete.gender
-                if athlete.gender == 'male':
-                    gender = 'M'
-                elif athlete.gender == 'female':
-                    gender = 'F'
+                # Handle gender conversion
+                gender = 'M' if athlete.gender == 'male' else 'F' if athlete.gender == 'female' else ''
 
                 # Convert date_of_birth to mm/dd/yyyy format
-                date_of_birth_obj = datetime.strptime(str(athlete.date_of_birth), '%Y-%m-%d')
-                formatted_date_of_birth = date_of_birth_obj.strftime('%m/%d/%Y')
+                try:
+                    date_of_birth_obj = datetime.strptime(str(athlete.date_of_birth), '%Y-%m-%d')
+                    formatted_date_of_birth = date_of_birth_obj.strftime('%m/%d/%Y')
+                except ValueError:
+                    formatted_date_of_birth = ''
 
-                parent_name = str(parent.parent_name).replace('  ', ' ').strip().title()
-                email = str(parent.email).strip()
-                phone = str(parent.phone_number).strip()
+                parent_name = parent.to_dict().get('full_name', '') if parent else 'N/A'
+                email = parent.email if parent else 'N/A'
+                phone = parent.phone_number if parent else 'N/A'
 
-                # Format data as per the provided structure
-                formatted_data = (f"I;{last_name};{first_name};;"
-                                  f"{gender};{formatted_date_of_birth};{team_abbr};"
-                                  f"{team_name};;;{parent_name.title()};"
-                                  f"STREETADDRESS;CITY;STATE;"
-                                  f"ZIP;COUNTRY;"
-                                  f"{phone};;;;;;;{email}")
+                # Format data for CSV
+                formatted_data = (
+                    f"I;{last_name};{first_name};;{gender};{formatted_date_of_birth};"
+                    f"{team_abbr};{team_name};;;{parent_name};"
+                    f"STREETADDRESS;CITY;STATE;ZIP;COUNTRY;"
+                    f"{phone};;;;;;;{email}"
+                )
                 writer.writerow([formatted_data])
 
             # Reset the file pointer to the beginning
@@ -86,9 +91,9 @@ class PullerResource(Resource):
             )
 
         except Exception as e:
-            # Handle exceptions
-            return {'error': str(e)}, 500
+            logging.exception("Unexpected error occurred")
+            return {'error': 'Internal server error'}, 500
 
         finally:
-            # Close the session
+            # Ensure the session is closed
             session.close()
