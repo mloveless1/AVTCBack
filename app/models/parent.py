@@ -16,6 +16,7 @@ class Parent(db.Model):
 
     # Relationship to Athlete model
     athletes = relationship("Athlete", order_by=Athlete.athlete_id, back_populates="parent")
+    address = relationship("Address", uselist=False, back_populates="parent")
 
     def to_dict(self):
         return {
