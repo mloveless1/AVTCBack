@@ -2,14 +2,14 @@ import os
 import io
 import csv
 import logging
-
 from datetime import datetime
+
 from flask import Response
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from app.models import Athlete, Parent
+from app.models import Athlete, Parent, Address
 from dotenv import load_dotenv
 
 if os.path.exists('.env'):
@@ -17,7 +17,6 @@ if os.path.exists('.env'):
 
 
 class PullerResource(Resource):
-
     @jwt_required()
     def get(self):
         # Load database URI from environment variable
@@ -28,10 +27,11 @@ class PullerResource(Resource):
         session = Session(bind=engine)
 
         try:
-            # Use outerjoin to handle cases with null parent_ids
+            # Perform a query to join Athlete, Parent, and Address based on parent_id
             query = (
-                session.query(Athlete, Parent)
+                session.query(Athlete, Parent, Address)
                 .outerjoin(Parent, Athlete.parent_id == Parent.parent_id)
+                .outerjoin(Address, Parent.parent_id == Address.parent_id)
             )
 
             try:
@@ -47,7 +47,7 @@ class PullerResource(Resource):
             team_abbr = "AVTC"
             team_name = "ANTELOPE VALLEY TRACK CLUB"
 
-            for athlete, parent in results:
+            for athlete, parent, address in results:
                 athlete_name_tokens = athlete.to_dict().get('full_name', '').split()
                 first_name = athlete_name_tokens[0].capitalize().strip() if athlete_name_tokens else ''
                 last_name = athlete_name_tokens[1] if len(athlete_name_tokens) > 1 else ''
@@ -72,11 +72,17 @@ class PullerResource(Resource):
                 email = parent.email if parent else 'N/A'
                 phone = parent.phone_number if parent else 'N/A'
 
+                # Extract address fields
+                street_address = address.street_address if address else 'N/A'
+                city = address.city if address else 'N/A'
+                state = address.state if address else 'CA'  # Default to 'CA' if not provided
+                zip_code = address.zip_code if address else 'N/A'
+
                 # Format data for CSV
                 formatted_data = (
                     f"I;{last_name};{first_name};;{gender};{formatted_date_of_birth};"
                     f"{team_abbr};{team_name};;;{parent_name};"
-                    f"STREETADDRESS;CITY;STATE;ZIP;COUNTRY;"
+                    f"{street_address};{city};{state};{zip_code};USA;"
                     f"{phone};;;;;;;{email}"
                 )
                 writer.writerow([formatted_data])
