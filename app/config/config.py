@@ -17,7 +17,7 @@ class Config:
     MAIL_PASSWORD = os.getenv('MAIL_PASSWORD')
 
     # More Email configs
-    NOTIFICATION_EMAIL_RECEIVERS = os.getenv('NOTIFICATION_EMAIL_RECEIVERS', '').split(',')
+    NOTIFICATION_EMAIL_RECEIVERS = os.getenv('NOTIFICATION_EMAIL_RECEIVERS', '').split(';')
     NOTIFICATION_EMAIL_SENDER = MAIL_USERNAME
 
     # SQLAlchemy configs
