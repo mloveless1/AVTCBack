@@ -86,7 +86,7 @@ class SignupResource(Resource):
             street_address=data['streetAddress'],
             city=data['city'],
             state='CA',
-            zip_code=data['zipCode'],
+            zip_code=data['zipcode'],
             parent_id=parent_id,
         )
 
