@@ -14,12 +14,13 @@ class BuildPDFData:
     def athletes_data(self):
         return self._athletes_data
 
-    def get_player_contract_form_data(self, athlete_data: dict) -> dict:
+    def get_player_contract_form_data(self, athlete_data: dict, season_year) -> dict:
         """Generates the data required for the Player Contract PDF."""
         parent_full_name = ' '.join([self.parent_info['parentFirstName'], self.parent_info['parentLastName']])
         athlete_full_name = ' '.join([athlete_data['athleteFirstName'], athlete_data['athleteLastName']])
-        athlete_age = str(calculate_age(datetime.strptime(athlete_data['dateOfBirth'], '%Y-%m-%d').date()))
-        athlete_age_in_year = calculate_age_in_year(datetime.strptime(athlete_data['dateOfBirth'], '%Y-%m-%d').date())
+        athlete_date_of_birth = datetime.strptime(athlete_data['dateOfBirth'], '%Y-%m-%d').date()
+        athlete_age = str(calculate_age(athlete_date_of_birth))
+        athlete_age_in_year = calculate_age_in_year(athlete_date_of_birth, season_year)
         athlete_division = calculate_division(athlete_age_in_year)
 
         return {
