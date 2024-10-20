@@ -23,7 +23,7 @@ class SignupResource(Resource):
             # Pull configuration from app config
             database_uri = app.config['SQLALCHEMY_DATABASE_URI']
             email_sender = app.config['NOTIFICATION_EMAIL_SENDER']
-            email_receivers = app.config['NOTIFICATION_EMAIL_RECEIVERS'].split(';')
+            email_receivers = app.config['NOTIFICATION_EMAIL_RECEIVERS']
 
         logging.info("Starting sign-up process")
 
