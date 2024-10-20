@@ -9,9 +9,8 @@ class Address(db.Model):
     address_id = Column(Integer, primary_key=True, index=True)
     street_address = Column(String(255))
     city = Column(String(100))
-    state = Column(String(50))
+    state = Column(String(2), default='CA')
     zip_code = Column(String(20))
-    country = Column(String(100))
 
     parent_id = Column(Integer, ForeignKey('parents.parent_id'), nullable=False)
     parent = relationship("Parent", back_populates="address")

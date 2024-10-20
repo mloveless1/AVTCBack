@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.database import db
-from app.models import Athlete, Parent
+from app.models import Athlete, Parent, Address
 from app.utils.build_pdf_data import BuildPDFData
 from app.tasks import send_async_email, process_pdf_async
 from app.utils.CalculateAge import calculate_age, calculate_age_in_year
@@ -38,10 +38,15 @@ class SignupResource(Resource):
         if existing_parent:
             return {'message': 'A user with this email already exists'}, 409
 
-        # Save new parent to DB
+        # Save new parent and address to DB
         try:
             db.session.add(new_parent)
             db.session.flush()
+
+            new_address = self._create_address(new_parent.parent_id, data)
+            db.session.add(new_address)
+            db.session.flush()
+
         except SQLAlchemyError as e:
             db.session.rollback()
             logging.error(f"Failed to create parent: {e}", exc_info=True)
@@ -74,6 +79,17 @@ class SignupResource(Resource):
             email=data['email'],
             phone_number=data['phoneNumber']
         )
+
+    def _create_address(self, parent_id, data):
+        """Helper to create an Address object."""
+        return Address(
+            street_address=data['streetAddress'],
+            city=data['city'],
+            state='CA',
+            zip_code=data['zipCode'],
+            parent_id=parent_id,
+        )
+
 
     def _process_athletes_and_generate_pdfs(self, data, parent):
         """Generate PDFs for athletes and build a signup summary."""
