@@ -108,7 +108,7 @@ class SignupResource(Resource):
 
             # Initialize PDF data processor
             data_processor = BuildPDFData(**data)
-            player_contract_data = data_processor.get_player_contract_form_data(athlete)
+            player_contract_data = data_processor.get_player_contract_form_data(athlete, int(app.config['SEASON_YEAR']))
             code_of_conduct_data = data_processor.get_code_of_conduct_form_data(athlete)
 
             # Generate file names for PDFs
