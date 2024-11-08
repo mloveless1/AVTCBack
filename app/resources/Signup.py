@@ -95,7 +95,7 @@ class SignupResource(Resource):
         """Generate PDFs for athletes and build a signup summary."""
         pdf_links = []
         parent_full_name = ' '.join([data['parentFirstName'], data['parentLastName']])
-        signup_summary = (f'Signup Summary:\n\n '
+        signup_summary = (f'Signup Summary:\n\n'
                           f'Parent: {parent_full_name}\n')
 
         parent_signature_data: base64 = data['parent_signature']
@@ -184,11 +184,20 @@ class SignupResource(Resource):
         subject = f"Successful sign up for AV Track Club"
         body = f"Contracts are attached below, not formatted for mobile devices.\n\n{signup_summary}"
 
-        logging.info("Sending async email")
+        logging.info("Sending async email to administrators")
         send_async_email.delay(
             subject=subject,
             sender=sender,
             recipients=recipients,
+            body=body,
+            pdf_paths=pdf_links
+        )
+
+        logging.info("Sending async email to parent")
+        send_async_email.delay(
+            subject=subject,
+            sender=sender,
+            recipients=parent.email,
             body=body,
             pdf_paths=pdf_links
         )
