@@ -197,7 +197,7 @@ class SignupResource(Resource):
         send_async_email.delay(
             subject=subject,
             sender=sender,
-            recipients=parent.email,
+            recipients=[parent.email],
             body=body,
             pdf_paths=pdf_links
         )
