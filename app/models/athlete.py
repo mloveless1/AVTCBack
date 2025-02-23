@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from app.database import db
 
@@ -15,6 +15,7 @@ class Athlete(db.Model):
     returner_status = Column(String(255))
     parent_id = Column(Integer, ForeignKey('parents.parent_id'))
     medical_conditions = Column(String(255))
+    pulled = Column(Boolean, default=False)
 
     # Relationship to Parent model
     parent = relationship("Parent", back_populates="athletes")
