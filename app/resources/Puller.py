@@ -32,6 +32,7 @@ class PullerResource(Resource):
                 session.query(Athlete, Parent, Address)
                 .outerjoin(Parent, Athlete.parent_id == Parent.parent_id)
                 .outerjoin(Address, Parent.parent_id == Address.parent_id)
+                .filter(Athlete.pulled == False)
             )
 
             try:
