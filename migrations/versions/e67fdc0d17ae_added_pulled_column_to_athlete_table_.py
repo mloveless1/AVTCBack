@@ -23,7 +23,6 @@ def upgrade():
                existing_type=mysql.VARCHAR(length=50),
                type_=sa.String(length=2),
                existing_nullable=True)
-        batch_op.drop_column('country')
 
     with op.batch_alter_table('athletes', schema=None) as batch_op:
         batch_op.add_column(sa.Column('pulled', sa.Boolean(), nullable=True))
