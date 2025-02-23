@@ -34,7 +34,7 @@ class SignupResource(Resource):
         new_parent = self._create_parent(data)
 
         # Check if parent already exists
-        existing_parent = session.query(Parent).filter(Parent.email == data['email']).first()
+        existing_parent = db.session.query(Parent).filter(Parent.email == data['email']).first()
         if existing_parent:
             return {'message': 'A user with this email already exists'}, 409
 
