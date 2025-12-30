@@ -25,4 +25,4 @@ class Config:
     SQL_ALCHEMY_TRACK_MODIFICATIONS = True
 
     # Year the season will be in
-    SEASON_YEAR = os.getenv('SEASON_YEAR', '2025')
+    SEASON_YEAR = os.getenv('SEASON_YEAR', '2026')
