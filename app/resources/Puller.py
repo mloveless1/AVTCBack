@@ -99,7 +99,7 @@ class PullerResource(Resource):
             )
 
         except Exception as e:
-            logging.exception("Unexpected error occurred")
+            logging.exception("Unexpected error occurred: {e}")
             return {'error': 'Internal server error'}, 500
 
         finally:
