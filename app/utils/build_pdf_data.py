@@ -25,7 +25,7 @@ class BuildPDFData:
 
         return {
             'KidSig': ' ',
-            'Year': '25',  # TODO: Make this dynamic and not hardcoded
+            'Year': '26',  # TODO: Make this dynamic and not hardcoded
             'TeamName': 'Antelope Valley Track Club',
             'TrackFieldBox': 'Yes',
             'Boy': 'X' if athlete_data['gender'] == 'male' else ' ',
